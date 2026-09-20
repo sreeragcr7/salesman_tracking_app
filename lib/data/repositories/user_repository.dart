@@ -101,6 +101,27 @@ class UserRepository {
       throw Exception('User is not logged in.');
     }
 
+    final today = DateTime.now().toIso8601String().split('T').first;
+
+    final existingTrip = await _supabase
+        .from('trips')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .limit(1);
+
+    if (existingTrip.isNotEmpty) {
+      final status = existingTrip.first['status'];
+
+      if (status == 'completed') {
+        throw Exception('Today\'s work day has already been completed.');
+      }
+
+      if (status == 'active') {
+        throw Exception('Today\'s work day is already active.');
+      }
+    }
+
     final response = await _supabase
         .from('trips')
         .insert({
@@ -140,6 +161,67 @@ class UserRepository {
     }
 
     return TripModel.fromJson(Map<String, dynamic>.from(response.first));
+  }
+
+  Future<TripModel?> getTodayTrip() async {
+    final user = _supabase.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final today = DateTime.now().toIso8601String().split('T').first;
+
+    final response = await _supabase
+        .from('trips')
+        .select()
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .order('created_at', ascending: false)
+        .limit(1);
+
+    if (response.isEmpty) {
+      return null;
+    }
+
+    return TripModel.fromJson(Map<String, dynamic>.from(response.first));
+  }
+
+  Future<TripModel> finishDay({
+    required String tripId,
+    required double latitude,
+    required double longitude,
+    required double totalDistance,
+  }) async {
+    final response = await _supabase
+        .from('trips')
+        .update({
+          'end_time': DateTime.now().toUtc().toIso8601String(),
+          'end_latitude': latitude,
+          'end_longitude': longitude,
+          'total_distance': totalDistance,
+          'status': 'completed',
+        })
+        .eq('id', tripId)
+        .select()
+        .single();
+
+    return TripModel.fromJson(Map<String, dynamic>.from(response));
+  }
+
+  Future<void> saveTripLocation({
+    required String tripId,
+    required double latitude,
+    required double longitude,
+    required double accuracy,
+  }) async {
+    await _supabase.from('trip_locations').insert({
+      'trip_id': tripId,
+      'latitude': latitude,
+      'longitude': longitude,
+      'accuracy': accuracy,
+      'timestamp': DateTime.now().toUtc().toIso8601String(),
+    });
   }
 
   Future<void> deleteSalesman(String userId) async {

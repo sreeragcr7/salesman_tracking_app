@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:salesman_tracking_app/data/models/user_model.dart';
 import 'package:salesman_tracking_app/features/admin/pages/create_salesman_page.dart';
+import 'package:salesman_tracking_app/features/auth/bloc/auth_bloc.dart';
 import 'package:salesman_tracking_app/features/salesman_details/pages/salesman_details_page.dart';
 
 import '../../../data/repositories/user_repository.dart';
@@ -53,7 +54,18 @@ class _AdminHomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Salesman Tracking')),
+      appBar: AppBar(
+        title: const Text('Salesman Tracking'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.read<AuthBloc>().add(const AuthLogoutRequested());
+            },
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

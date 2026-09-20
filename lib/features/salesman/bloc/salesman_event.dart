@@ -15,3 +15,12 @@ class SalesmanStartDayRequested extends SalesmanEvent {
 class SalesmanDayStatusRequested extends SalesmanEvent {
   const SalesmanDayStatusRequested();
 }
+
+class SalesmanEndDayRequested extends SalesmanEvent {
+  final String tripId;
+
+  const SalesmanEndDayRequested({required this.tripId});
+
+  @override
+  List<Object?> get props => [tripId];
+}

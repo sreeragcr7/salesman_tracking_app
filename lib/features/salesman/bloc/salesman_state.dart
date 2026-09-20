@@ -28,6 +28,19 @@ class SalesmanDayActive extends SalesmanState {
   List<Object?> get props => [trip];
 }
 
+class SalesmanDayEnding extends SalesmanState {
+  const SalesmanDayEnding();
+}
+
+class SalesmanDayCompleted extends SalesmanState {
+  final TripModel trip;
+
+  const SalesmanDayCompleted(this.trip);
+
+  @override
+  List<Object?> get props => [trip];
+}
+
 class SalesmanDayFailure extends SalesmanState {
   const SalesmanDayFailure(this.message);
   final String message;
