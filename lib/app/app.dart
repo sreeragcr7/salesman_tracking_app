@@ -14,7 +14,8 @@ class App extends StatelessWidget {
     return RepositoryProvider(
       create: (_) => AuthRepository(),
       child: BlocProvider(
-        create: (context) => AuthBloc(authRepository: context.read<AuthRepository>()),
+        create: (context) =>
+            AuthBloc(authRepository: context.read<AuthRepository>())..add(const AuthSessionRequested()),
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Salesman-tracking-app',

@@ -21,6 +21,18 @@ class AuthRepository {
     return UserModel.fromJson(user.id, profile);
   }
 
+  Future<UserModel> getCurrentUserProfile() async {
+    final user = _supabase.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final profile = await _supabase.from('profiles').select().eq('id', user.id).single();
+
+    return UserModel.fromJson(user.id, profile);
+  }
+
   Future<void> logout() async {
     await _supabase.auth.signOut();
   }

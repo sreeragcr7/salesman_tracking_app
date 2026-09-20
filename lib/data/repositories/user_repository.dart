@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:salesman_tracking_app/data/models/trip_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/user_model.dart';
@@ -51,6 +52,20 @@ class UserRepository {
     return data['userId'].toString();
   }
 
+  Future<List<DateTime>> getWorkingDates(String userId) async {
+    final response = await _supabase.from('trips').select('date').eq('user_id', userId).order('date', ascending: false);
+
+    final dates = <DateTime>{};
+    for (final item in response as List) {
+      final date = item['date'];
+
+      if (date != null) {
+        dates.add(DateTime.parse(date.toString()));
+      }
+    }
+    return dates.toList();
+  }
+
   Future<String> uploadProfileImage({required String userId, required File file}) async {
     final extension = file.path.split('.').last.toLowerCase();
 
@@ -78,6 +93,53 @@ class UserRepository {
 
       throw Exception('Unable to update profile image.');
     }
+  }
+
+  Future<TripModel> startDay({required double latitude, required double longitude}) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final response = await _supabase
+        .from('trips')
+        .insert({
+          'user_id': user.id,
+          'date': DateTime.now().toIso8601String().split('T').first,
+          'start_time': DateTime.now().toUtc().toIso8601String(),
+          'start_latitude': latitude,
+          'start_longitude': longitude,
+          'status': 'active',
+        })
+        .select()
+        .single();
+
+    return TripModel.fromJson(Map<String, dynamic>.from(response));
+  }
+
+  Future<TripModel?> getActiveTripForToday() async {
+    final user = _supabase.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final today = DateTime.now().toIso8601String().split('T').first;
+
+    final response = await _supabase
+        .from('trips')
+        .select()
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .eq('status', 'active')
+        .order('created_at', ascending: false)
+        .limit(1);
+
+    if (response.isEmpty) {
+      return null;
+    }
+
+    return TripModel.fromJson(Map<String, dynamic>.from(response.first));
   }
 
   Future<void> deleteSalesman(String userId) async {

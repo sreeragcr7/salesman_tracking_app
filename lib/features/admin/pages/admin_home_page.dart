@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:salesman_tracking_app/data/models/user_model.dart';
 import 'package:salesman_tracking_app/features/admin/pages/create_salesman_page.dart';
-import 'package:salesman_tracking_app/features/admin/pages/salesman_details_page.dart';
+import 'package:salesman_tracking_app/features/salesman_details/pages/salesman_details_page.dart';
 
 import '../../../data/repositories/user_repository.dart';
 import '../bloc/admin_bloc.dart';

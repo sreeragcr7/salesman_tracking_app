@@ -20,3 +20,7 @@ class AuthLoginRequested extends AuthEvent {
 class AuthLogoutRequested extends AuthEvent {
   const AuthLogoutRequested();
 }
+
+class AuthSessionRequested extends AuthEvent {
+  const AuthSessionRequested();
+}

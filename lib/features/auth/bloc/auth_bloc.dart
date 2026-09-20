@@ -12,6 +12,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({required this.authRepository}) : super(AuthInitial()) {
     on<AuthLoginRequested>(_onLoginRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
+    on<AuthSessionRequested>(_onSessionRequested);
+  }
+
+  Future<void> _onSessionRequested(AuthSessionRequested event, Emitter<AuthState> emit) async {
+    try {
+      emit(const AuthLoading());
+      final user = authRepository.currentUser;
+      if (user == null) {
+        emit(const AuthUnauthenticated());
+        return;
+      }
+      final profile = await authRepository.getCurrentUserProfile();
+      emit(AuthAuthenticated(profile));
+    } catch (e) {
+      emit(AuthFailure(e.toString().replaceFirst('Exception: ', '')));
+    }
   }
 
   Future<void> _onLoginRequested(AuthLoginRequested event, Emitter<AuthState> emit) async {
