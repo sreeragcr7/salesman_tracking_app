@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:salesman_tracking_app/features/admin/bloc/admin_bloc.dart';
 
 class CreateSalesmanPage extends StatefulWidget {
@@ -18,12 +21,27 @@ class _CreateSalesmanPageState extends State<CreateSalesmanPage> {
 
   bool _obscurePassword = true;
 
+  final ImagePicker _imagePicker = ImagePicker();
+  File? _selectedImage;
+
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickProfileImage() async {
+    final image = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 80, maxWidth: 1200);
+
+    if (image == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedImage = File(image.path);
+    });
   }
 
   void _createSalesman() {
@@ -34,7 +52,8 @@ class _CreateSalesmanPageState extends State<CreateSalesmanPage> {
       AdminSalesmanCreateRequested(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        password: _passwordController.text,
+        profileImage: _selectedImage?.path,
       ),
     );
   }
@@ -84,6 +103,37 @@ class _CreateSalesmanPageState extends State<CreateSalesmanPage> {
                       ),
 
                       const SizedBox(height: 32),
+
+                      Center(
+                        child: GestureDetector(
+                          onTap: isLoading ? null : _pickProfileImage,
+                          child: Stack(
+                            alignment: Alignment.bottomRight,
+                            children: [
+                              CircleAvatar(
+                                radius: 55,
+                                backgroundImage: _selectedImage != null ? FileImage(_selectedImage!) : null,
+                                child: _selectedImage == null ? const Icon(Icons.person, size: 55) : null,
+                              ),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.blue),
+                                child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      const Text(
+                        'Tap to select profile image',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+
+                      const SizedBox(height: 24),
 
                       TextFormField(
                         controller: _nameController,

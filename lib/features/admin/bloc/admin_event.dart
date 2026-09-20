@@ -28,3 +28,11 @@ class AdminSalesmanCreateRequested extends AdminEvent {
   @override
   List<Object?> get props => [name, email, password, profileImage];
 }
+
+class AdminSalesmanDeleteRequested extends AdminEvent {
+  const AdminSalesmanDeleteRequested({required this.userId});
+  final String userId;
+
+  @override
+  List<Object?> get props => [userId];
+}

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/data/models/user_model.dart';
 import 'package:salesman_tracking_app/features/admin/pages/create_salesman_page.dart';
+import 'package:salesman_tracking_app/features/admin/pages/salesman_details_page.dart';
 
 import '../../../data/repositories/user_repository.dart';
 import '../bloc/admin_bloc.dart';
@@ -21,6 +23,32 @@ class AdminHomePage extends StatelessWidget {
 
 class _AdminHomeView extends StatelessWidget {
   const _AdminHomeView();
+
+  void _showSalesmanActions(BuildContext context, UserModel salesman) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('Update Salesman'),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+
+                  // Update screen will be added next.
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,11 +112,66 @@ class _AdminHomeView extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final salesman = state.salesman[index];
 
-                          return SalesmanCard(
-                            salesman: salesman,
-                            onTap: () {
-                              // We'll add salesman details later.
+                          return Dismissible(
+                            key: ValueKey(salesman.uid),
+                            direction: DismissDirection.startToEnd,
+                            confirmDismiss: (_) async {
+                              return await showDialog(
+                                context: context,
+                                builder: (dialogContext) {
+                                  return AlertDialog(
+                                    title: const Text('Delete Salesman?'),
+                                    content: Text('Are you sure you want to delete ${salesman.name}?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(dialogContext).pop(false);
+                                        },
+                                        child: const Text('Cancel'),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () {
+                                          Navigator.of(dialogContext).pop(true);
+                                        },
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             },
+                            onDismissed: (_) {
+                              context.read<AdminBloc>().add(AdminSalesmanDeleteRequested(userId: salesman.uid));
+                            },
+                            background: Container(
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.only(left: 24),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade700,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.delete, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            child: SalesmanCard(
+                              salesman: salesman,
+                              onTap: () {
+                                Navigator.of(
+                                  context,
+                                ).push(MaterialPageRoute(builder: (_) => SalesmanDetailsPage(salesman: salesman)));
+                              },
+                              onLongPress: () {
+                                _showSalesmanActions(context, salesman);
+                              },
+                            ),
                           );
                         },
                       ),
