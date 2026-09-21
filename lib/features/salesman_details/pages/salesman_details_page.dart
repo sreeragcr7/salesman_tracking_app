@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-import 'package:salesman_tracking_app/data/models/trip_model.dart';
-import 'package:salesman_tracking_app/features/visits/pages/trip_visits_page.dart';
 
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../bloc/salesman_details_bloc.dart';
+import '../widgets/salesman_profile_header.dart';
+import '../widgets/working_history_section.dart';
 
 class SalesmanDetailsPage extends StatelessWidget {
   final UserModel salesman;
@@ -31,8 +30,6 @@ class _SalesmanDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasProfileImage = salesman.profileImage != null && salesman.profileImage!.isNotEmpty;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Salesman Details')),
       body: SingleChildScrollView(
@@ -40,105 +37,12 @@ class _SalesmanDetailsView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 42,
-                  backgroundImage: hasProfileImage ? NetworkImage(salesman.profileImage!) : null,
-                  child: !hasProfileImage ? const Icon(Icons.person, size: 40) : null,
-                ),
-                const SizedBox(width: 18),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        salesman.name.isEmpty ? 'Unnamed Salesman' : salesman.name,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        salesman.email,
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(salesman.role, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
+            SalesmanProfileHeader(salesman: salesman),
             const SizedBox(height: 32),
-
-            const Text('Working History', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-
-            const SizedBox(height: 10),
-
-            const Divider(),
-
-            const SizedBox(height: 8),
-
-            BlocBuilder<SalesmanDetailsBloc, SalesmanDetailsState>(
-              builder: (context, state) {
-                if (state is SalesmanDetailsLoading) {
-                  return const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-
-                if (state is SalesmanDetailsFailure) {
-                  return Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Center(child: Text(state.message, textAlign: TextAlign.center)),
-                  );
-                }
-
-                if (state is SalesmanDetailsLoaded) {
-                  if (state.trips.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Center(
-                        child: Text('No working history found.', style: TextStyle(color: Colors.grey.shade600)),
-                      ),
-                    );
-                  }
-
-                  return Column(
-                    children: state.trips.map((trip) {
-                      return _WorkingDateTile(trip: trip);
-                    }).toList(),
-                  );
-                }
-
-                return const SizedBox.shrink();
-              },
-            ),
+            const WorkingHistorySection(),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _WorkingDateTile extends StatelessWidget {
-  final TripModel trip;
-
-  const _WorkingDateTile({required this.trip});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.calendar_today_outlined),
-      title: Text(DateFormat('dd MMMM yyyy').format(trip.date), style: const TextStyle(fontWeight: FontWeight.w500)),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => TripVisitsPage(trip: trip)));
-      },
     );
   }
 }
