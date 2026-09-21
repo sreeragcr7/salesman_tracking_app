@@ -44,6 +44,8 @@ class _SalesmanHomeView extends StatelessWidget {
     return true;
   }
 
+
+
   void _showEndDayConfirmation(BuildContext context, String tripId) {
     showDialog(
       context: context,

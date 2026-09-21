@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:salesman_tracking_app/data/models/trip_location_model.dart';
 import 'package:salesman_tracking_app/data/models/trip_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -52,18 +53,10 @@ class UserRepository {
     return data['userId'].toString();
   }
 
-  Future<List<DateTime>> getWorkingDates(String userId) async {
-    final response = await _supabase.from('trips').select('date').eq('user_id', userId).order('date', ascending: false);
+  Future<List<TripModel>> getWorkingTrips(String userId) async {
+    final response = await _supabase.from('trips').select().eq('user_id', userId).order('date', ascending: false);
 
-    final dates = <DateTime>{};
-    for (final item in response as List) {
-      final date = item['date'];
-
-      if (date != null) {
-        dates.add(DateTime.parse(date.toString()));
-      }
-    }
-    return dates.toList();
+    return (response as List).map((item) => TripModel.fromJson(Map<String, dynamic>.from(item))).toList();
   }
 
   Future<String> uploadProfileImage({required String userId, required File file}) async {
@@ -222,6 +215,16 @@ class UserRepository {
       'accuracy': accuracy,
       'timestamp': DateTime.now().toUtc().toIso8601String(),
     });
+  }
+
+  Future<List<TripLocationModel>> getTripLocations(String tripId) async {
+    final response = await _supabase
+        .from('trip_locations')
+        .select()
+        .eq('trip_id', tripId)
+        .order('timestamp', ascending: true);
+
+    return (response as List).map((item) => TripLocationModel.fromJson(Map<String, dynamic>.from(item))).toList();
   }
 
   Future<void> deleteSalesman(String userId) async {

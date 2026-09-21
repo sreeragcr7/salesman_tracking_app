@@ -16,12 +16,12 @@ class SalesmanDetailsLoading extends SalesmanDetailsState {
 }
 
 class SalesmanDetailsLoaded extends SalesmanDetailsState {
-  const SalesmanDetailsLoaded({required this.dates});
+  const SalesmanDetailsLoaded({required this.trips});
 
-  final List<DateTime> dates;
+  final List<TripModel>trips;
 
   @override
-  List<Object?> get props => [dates];
+  List<Object?> get props => [trips];
 }
 
 class SalesmanDetailsFailure extends SalesmanDetailsState {

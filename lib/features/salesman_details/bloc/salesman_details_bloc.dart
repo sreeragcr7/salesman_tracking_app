@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/data/models/trip_model.dart';
 import 'package:salesman_tracking_app/data/repositories/user_repository.dart';
 
 part 'salesman_details_event.dart';
@@ -16,9 +17,9 @@ class SalesmanDetailsBloc extends Bloc<SalesmanDetailsEvent, SalesmanDetailsStat
     try {
       emit(const SalesmanDetailsLoading());
 
-      final dates = await userRepository.getWorkingDates(event.userId);
+      final trips = await userRepository.getWorkingTrips(event.userId);
 
-      emit(SalesmanDetailsLoaded(dates: dates));
+      emit(SalesmanDetailsLoaded(trips: trips));
     } catch (e) {
       emit(SalesmanDetailsFailure(e.toString().replaceFirst('Exception: ', '')));
     }
