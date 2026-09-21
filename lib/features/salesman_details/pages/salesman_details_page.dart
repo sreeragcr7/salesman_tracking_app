@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:salesman_tracking_app/data/models/trip_model.dart';
-import 'package:salesman_tracking_app/features/tracking/pages/trip_route_page.dart';
+import 'package:salesman_tracking_app/features/visits/pages/trip_visits_page.dart';
 
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/user_repository.dart';
@@ -137,7 +137,7 @@ class _WorkingDateTile extends StatelessWidget {
       title: Text(DateFormat('dd MMMM yyyy').format(trip.date), style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => TripRoutePage(tripId: trip.id)));
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => TripVisitsPage(trip: trip)));
       },
     );
   }

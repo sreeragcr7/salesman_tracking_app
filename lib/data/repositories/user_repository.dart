@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:salesman_tracking_app/data/models/trip_location_model.dart';
 import 'package:salesman_tracking_app/data/models/trip_model.dart';
+import 'package:salesman_tracking_app/data/models/visit_media_model.dart';
+import 'package:salesman_tracking_app/data/models/visit_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/user_model.dart';
@@ -225,6 +227,75 @@ class UserRepository {
         .order('timestamp', ascending: true);
 
     return (response as List).map((item) => TripLocationModel.fromJson(Map<String, dynamic>.from(item))).toList();
+  }
+
+  Future<List<VisitModel>> getVisitsForTrip(String tripId) async {
+    final response = await _supabase.from('visits').select().eq('trip_id', tripId).order('visited_at', ascending: true);
+
+    return (response as List).map((item) => VisitModel.fromJson(Map<String, dynamic>.from(item))).toList();
+  }
+
+  Future<String> uploadVisitMedia({required String tripId, required File file}) async {
+    final extension = file.path.split('.').last.toLowerCase();
+
+    final filePath = '$tripId/${DateTime.now().millisecondsSinceEpoch}.$extension';
+
+    await _supabase.storage.from('visit-media').upload(filePath, file);
+
+    return _supabase.storage.from('visit-media').getPublicUrl(filePath);
+  }
+
+  Future<VisitModel> createVisit({
+    required String tripId,
+    required String shopName,
+    String? description,
+    required double latitude,
+    required double longitude,
+  }) async {
+    final response = await _supabase
+        .from('visits')
+        .insert({
+          'trip_id': tripId,
+          'shop_name': shopName,
+          'description': description,
+          'latitude': latitude,
+          'longitude': longitude,
+          'visited_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .select()
+        .single();
+
+    return VisitModel.fromJson(Map<String, dynamic>.from(response));
+  }
+
+  Future<VisitMediaModel> createVisitMedia({
+    required String visitId,
+    required String mediaUrl,
+    required String mediaType,
+  }) async {
+    final response = await _supabase
+        .from('visit_media')
+        .insert({'visit_id': visitId, 'media_url': mediaUrl, 'media_type': mediaType})
+        .select()
+        .single();
+
+    return VisitMediaModel.fromJson(Map<String, dynamic>.from(response));
+  }
+
+  Future<TripModel> getTripById(String tripId) async {
+    final response = await _supabase.from('trips').select().eq('id', tripId).single();
+
+    return TripModel.fromJson(Map<String, dynamic>.from(response));
+  }
+
+  Future<List<VisitMediaModel>> getVisitMedia(String visitId) async {
+    final response = await _supabase
+        .from('visit_media')
+        .select()
+        .eq('visit_id', visitId)
+        .order('created_at', ascending: true);
+
+    return (response as List).map((item) => VisitMediaModel.fromJson(Map<String, dynamic>.from(item))).toList();
   }
 
   Future<void> deleteSalesman(String userId) async {

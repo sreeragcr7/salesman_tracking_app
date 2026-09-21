@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:salesman_tracking_app/core/services/location_tracking_service.dart';
 import 'package:salesman_tracking_app/features/salesman/bloc/salesman_bloc.dart';
+import 'package:salesman_tracking_app/features/visits/pages/add_visit_page.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../../core/services/location_service.dart';
 import '../../../data/repositories/user_repository.dart';
@@ -43,8 +44,6 @@ class _SalesmanHomeView extends StatelessWidget {
   bool _canStartDay() {
     return true;
   }
-
-
 
   void _showEndDayConfirmation(BuildContext context, String tripId) {
     showDialog(
@@ -189,8 +188,23 @@ class _SalesmanHomeView extends StatelessWidget {
                               width: double.infinity,
                               child: Text('Come back tomorrow to start your work day.', textAlign: TextAlign.center),
                             ),
+                        if (dayStarted && activeTrip != null) ...[
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: FilledButton.icon(
+                              onPressed: () {
+                                Navigator.of(
+                                  context,
+                                ).push(MaterialPageRoute(builder: (_) => AddVisitPage(tripId: activeTrip.id)));
+                              },
+                              icon: const Icon(Icons.add_business_outlined),
+                              label: const Text('ADD VISIT'),
+                            ),
+                          ),
 
-                        if (dayStarted && activeTrip != null)
+                          const SizedBox(height: 12),
+
                           SizedBox(
                             width: double.infinity,
                             height: 50,
@@ -213,6 +227,7 @@ class _SalesmanHomeView extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ],
                       ],
                     ),
                   ),
