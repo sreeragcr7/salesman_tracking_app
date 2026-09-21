@@ -1,10 +1,13 @@
-class UserModel {
-  const UserModel({required this.uid, required this.name, required this.email, required this.role, this.profileImage});
-  final String uid;
-  final String name;
-  final String email;
-  final String role;
-  final String? profileImage;
+import 'package:salesman_tracking_app/domain/entities/user.dart';
+
+class UserModel extends User {
+  const UserModel({
+    required super.uid,
+    required super.name,
+    required super.email,
+    required super.role,
+    super.profileImage,
+  });
 
   factory UserModel.fromJson(String uid, Map<String, dynamic> json) {
     return UserModel(
