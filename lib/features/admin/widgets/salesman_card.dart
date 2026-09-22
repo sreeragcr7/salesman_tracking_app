@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:salesman_tracking_app/core/theme/app_text_styles.dart';
 import 'package:salesman_tracking_app/core/widgets/salesman_status.dart';
 
 import '../../../data/models/user_model.dart';
@@ -37,7 +38,7 @@ class SalesmanCard extends StatelessWidget {
 
         title: Text(
           salesman.name.isEmpty ? 'Unnamed Salesman' : salesman.name,
-          style: textTheme.titleMedium,
+          style: AppTextStyles.bodyLarge,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

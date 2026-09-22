@@ -34,6 +34,10 @@ class _AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
+        if (state is AuthInitial || state is AuthLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         if (state is AuthAuthenticated) {
           if (state.user.role == 'admin') {
             return const AdminHomePage();
@@ -42,7 +46,11 @@ class _AuthGate extends StatelessWidget {
           return const SalesmanHomePage();
         }
 
-        return const LoginPage();
+        if (state is AuthUnauthenticated) {
+          return const LoginPage();
+        }
+
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }

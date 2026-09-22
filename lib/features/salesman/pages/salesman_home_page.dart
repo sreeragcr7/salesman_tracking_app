@@ -81,7 +81,7 @@ class _SalesmanHomeView extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppAppBar(title: 'Salesman Dashboard', showLogout: true),
-        body: Padding(
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: BlocBuilder<SalesmanBloc, SalesmanState>(
             builder: (context, state) {

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/core/constants/enums.dart';
 import 'package:salesman_tracking_app/data/models/user_model.dart';
 import 'package:salesman_tracking_app/features/admin/widgets/delete_salesman_dialog.dart';
 import 'package:salesman_tracking_app/features/admin/widgets/salesman_actions_sheet.dart';
@@ -12,7 +14,12 @@ import '../bloc/admin_bloc.dart';
 import 'salesman_card.dart';
 
 class SalesmanListSection extends StatefulWidget {
-  const SalesmanListSection({super.key});
+  final SalesmanFilter selectedFilter;
+
+  final void Function({required int total, required int active, required int completed, required int notStarted})
+  onSummaryUpdated;
+
+  const SalesmanListSection({super.key, required this.selectedFilter, required this.onSummaryUpdated});
 
   @override
   State<SalesmanListSection> createState() => _SalesmanListSectionState();
@@ -21,9 +28,12 @@ class SalesmanListSection extends StatefulWidget {
 class _SalesmanListSectionState extends State<SalesmanListSection> {
   final Map<String, Trip?> _todayTrips = {};
 
+  bool _tripsLoaded = false;
+
   Future<void> _refresh(BuildContext context) async {
     setState(() {
       _todayTrips.clear();
+      _tripsLoaded = false;
     });
 
     context.read<AdminBloc>().add(const AdminSalesmanRequested());
@@ -45,8 +55,56 @@ class _SalesmanListSectionState extends State<SalesmanListSection> {
     }
 
     setState(() {
-      _todayTrips.addEntries(results);
+      _todayTrips
+        ..clear()
+        ..addEntries(results);
+
+      _tripsLoaded = true;
     });
+
+    _updateSummary(salesmen);
+  }
+
+  void _updateSummary(List<UserModel> salesmen) {
+    int active = 0;
+    int completed = 0;
+    int notStarted = 0;
+
+    for (final salesman in salesmen) {
+      final trip = _todayTrips[salesman.uid];
+
+      if (trip == null) {
+        notStarted++;
+      } else if (trip.status == 'active') {
+        active++;
+      } else if (trip.status == 'completed') {
+        completed++;
+      }
+    }
+
+    widget.onSummaryUpdated(total: salesmen.length, active: active, completed: completed, notStarted: notStarted);
+  }
+
+  List<UserModel> _getFilteredSalesmen(List<UserModel> salesmen) {
+    switch (widget.selectedFilter) {
+      case SalesmanFilter.all:
+        return salesmen;
+
+      case SalesmanFilter.active:
+        return salesmen.where((salesman) {
+          return _todayTrips[salesman.uid]?.status == 'active';
+        }).toList();
+
+      case SalesmanFilter.completed:
+        return salesmen.where((salesman) {
+          return _todayTrips[salesman.uid]?.status == 'completed';
+        }).toList();
+
+      case SalesmanFilter.notStarted:
+        return salesmen.where((salesman) {
+          return _todayTrips[salesman.uid] == null;
+        }).toList();
+    }
   }
 
   @override
@@ -66,19 +124,41 @@ class _SalesmanListSectionState extends State<SalesmanListSection> {
             return const _EmptyState();
           }
 
-          if (_todayTrips.length != state.salesman.length) {
+          final salesmanIds = state.salesman.map((salesman) => salesman.uid).toSet();
+
+          final loadedIds = _todayTrips.keys.toSet();
+
+          if (!setEquals(salesmanIds, loadedIds)) {
             _loadTodayTrips(state.salesman);
+
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!_tripsLoaded) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final filteredSalesmen = _getFilteredSalesmen(state.salesman);
+
+          if (filteredSalesmen.isEmpty) {
+            return RefreshIndicator(
+              onRefresh: () => _refresh(context),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [SizedBox(height: 120), _NoFilteredSalesmen()],
+              ),
+            );
           }
 
           return RefreshIndicator(
             onRefresh: () => _refresh(context),
             child: ListView.separated(
-              itemCount: state.salesman.length,
+              itemCount: filteredSalesmen.length,
               separatorBuilder: (_, _) {
                 return const SizedBox(height: 12);
               },
               itemBuilder: (context, index) {
-                final salesman = state.salesman[index];
+                final salesman = filteredSalesmen[index];
 
                 return Dismissible(
                   key: ValueKey(salesman.uid),
@@ -143,6 +223,26 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text('No salesmen found.'));
+  }
+}
+
+class _NoFilteredSalesmen extends StatelessWidget {
+  const _NoFilteredSalesmen();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      children: [
+        Icon(Icons.people_outline, size: 48, color: textTheme.bodySmall?.color?.withValues(alpha: 0.50)),
+        const SizedBox(height: 12),
+        Text(
+          'No salesmen in this category.',
+          style: textTheme.bodyMedium?.copyWith(color: textTheme.bodyMedium?.color?.withValues(alpha: 0.65)),
+        ),
+      ],
+    );
   }
 }
 
