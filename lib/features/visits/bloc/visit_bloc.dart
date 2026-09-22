@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/core/errors/failures.dart';
 import 'package:salesman_tracking_app/core/services/location_service.dart';
 import 'package:salesman_tracking_app/data/models/visit_model.dart';
 import 'package:salesman_tracking_app/domain/usecases/media/create_visit_media.dart';
@@ -49,12 +50,14 @@ class VisitBloc extends Bloc<VisitEvent, VisitState> {
           emit(VisitFailure(failure.message));
         },
         (visit) async {
+          TFailure? mediaFailure;
+
           for (final mediaFile in event.mediaFiles) {
             final mediaResult = await uploadVisitMedia(UploadVisitMediaParams(tripId: event.tripId, file: mediaFile));
 
             await mediaResult.fold(
               (failure) async {
-                emit(VisitFailure(failure.message));
+                mediaFailure = failure;
               },
               (mediaUrl) async {
                 final extension = mediaFile.path.split('.').last.toLowerCase();
@@ -66,10 +69,19 @@ class VisitBloc extends Bloc<VisitEvent, VisitState> {
                 );
 
                 createMediaResult.fold((failure) {
-                  emit(VisitFailure(failure.message));
+                  mediaFailure = failure;
                 }, (_) {});
               },
             );
+
+            if (mediaFailure != null) {
+              break;
+            }
+          }
+
+          if (mediaFailure != null) {
+            emit(VisitFailure(mediaFailure!.message));
+            return;
           }
 
           emit(VisitSubmitted(visit as VisitModel));

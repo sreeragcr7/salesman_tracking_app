@@ -87,10 +87,11 @@ class AppTheme {
         contentTextStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.lightSecondaryText),
       ),
 
-      snackBarTheme: SnackBarThemeData(
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: AppColors.lightText,
+        contentTextStyle: TextStyle(color: Colors.white, fontSize: 14),
+        actionTextColor: Colors.white,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        contentTextStyle: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
       ),
     );
   }
@@ -177,10 +178,11 @@ class AppTheme {
         contentTextStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.darkSecondaryText),
       ),
 
-      snackBarTheme: SnackBarThemeData(
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: AppColors.darkCard,
+        contentTextStyle: TextStyle(color: AppColors.darkText, fontSize: 14),
+        actionTextColor: AppColors.primaryDark,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        contentTextStyle: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
       ),
     );
   }

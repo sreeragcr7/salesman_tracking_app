@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
+import 'package:salesman_tracking_app/domain/usecases/trips/get_trip_locations.dart';
 import 'package:salesman_tracking_app/init_dependencies.dart';
 
 import '../../../core/services/location_service.dart';
@@ -32,6 +33,7 @@ class SalesmanHomePage extends StatelessWidget {
       create: (_) => SalesmanBloc(
         startDay: sl<StartDay>(),
         getTodayTrip: sl<GetTodayTrip>(),
+        getTripLocations: sl<GetTripLocations>(),
         saveTripLocation: sl<SaveTripLocation>(),
         finishDay: sl<FinishDay>(),
         locationService: LocationService(),
@@ -80,7 +82,16 @@ class _SalesmanHomeView extends StatelessWidget {
         }
       },
       child: Scaffold(
-        appBar: AppAppBar(title: 'Salesman Dashboard', showLogout: true),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: BlocBuilder<SalesmanBloc, SalesmanState>(
+            builder: (context, state) {
+              final isTracking = state is SalesmanDayActive || state is SalesmanDayEnding;
+
+              return AppAppBar(title: 'Salesman Dashboard', showLogout: true, logoutEnabled: !isTracking);
+            },
+          ),
+        ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: BlocBuilder<SalesmanBloc, SalesmanState>(

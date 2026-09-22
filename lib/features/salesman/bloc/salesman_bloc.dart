@@ -9,6 +9,7 @@ import 'package:salesman_tracking_app/core/utils/distance_utils.dart';
 import 'package:salesman_tracking_app/data/models/trip_model.dart';
 import 'package:salesman_tracking_app/domain/usecases/trips/finish_day.dart';
 import 'package:salesman_tracking_app/domain/usecases/trips/get_today_trip.dart';
+import 'package:salesman_tracking_app/domain/usecases/trips/get_trip_locations.dart';
 import 'package:salesman_tracking_app/domain/usecases/trips/save_trip_location.dart';
 import 'package:salesman_tracking_app/domain/usecases/trips/start_day.dart';
 
@@ -19,6 +20,8 @@ class SalesmanBloc extends Bloc<SalesmanEvent, SalesmanState> {
   final StartDay startDay;
   final GetTodayTrip getTodayTrip;
   final SaveTripLocation saveTripLocation;
+  final GetTripLocations getTripLocations;
+
   final FinishDay finishDay;
 
   final LocationService locationService;
@@ -26,6 +29,7 @@ class SalesmanBloc extends Bloc<SalesmanEvent, SalesmanState> {
 
   Position? _lastPosition;
   double _totalDistanceMeters = 0;
+  bool _isSavingLocation = false;
 
   SalesmanBloc({
     required this.startDay,
@@ -34,6 +38,7 @@ class SalesmanBloc extends Bloc<SalesmanEvent, SalesmanState> {
     required this.finishDay,
     required this.locationService,
     required this.trackingService,
+    required this.getTripLocations,
   }) : super(const SalesmanDayInitial()) {
     on<SalesmanStartDayRequested>(_onStartDayRequested);
     on<SalesmanDayStatusRequested>(_onDayStatusRequested);
@@ -73,14 +78,7 @@ class SalesmanBloc extends Bloc<SalesmanEvent, SalesmanState> {
 
               _lastPosition = position;
 
-              saveTripLocation(
-                SaveTripLocationParams(
-                  tripId: trip.id,
-                  latitude: position.latitude,
-                  longitude: position.longitude,
-                  accuracy: position.accuracy,
-                ),
-              );
+              _saveLocation(tripId: trip.id, position: position);
             },
           );
 
@@ -92,33 +90,130 @@ class SalesmanBloc extends Bloc<SalesmanEvent, SalesmanState> {
     }
   }
 
+  Future<void> _saveLocation({required String tripId, required Position position}) async {
+    if (_isSavingLocation) {
+      return;
+    }
+
+    _isSavingLocation = true;
+
+    try {
+      final result = await saveTripLocation(
+        SaveTripLocationParams(
+          tripId: tripId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          accuracy: position.accuracy,
+        ),
+      );
+
+      result.fold((_) {
+        // Location upload failure should not stop GPS tracking.
+      }, (_) {});
+    } finally {
+      _isSavingLocation = false;
+    }
+  }
+
   Future<void> _onDayStatusRequested(SalesmanDayStatusRequested event, Emitter<SalesmanState> emit) async {
     try {
       emit(const SalesmanDayLoading());
 
       final result = await getTodayTrip(const NoParams());
 
-      result.fold(
-        (failure) {
-          emit(SalesmanDayFailure(failure.message));
-        },
-        (trip) {
-          if (trip == null) {
-            emit(const SalesmanDayInitial());
-            return;
-          }
+      if (result.isLeft()) {
+        final failure = result.getLeft().toNullable();
 
-          if (trip.status == 'completed') {
-            emit(SalesmanDayCompleted(trip as TripModel));
-            return;
-          }
+        emit(SalesmanDayFailure(failure?.message ?? 'Failed to get today\'s trip.'));
 
-          emit(SalesmanDayActive(trip as TripModel));
-        },
-      );
+        return;
+      }
+
+      final trip = result.getRight().toNullable();
+
+      if (trip == null) {
+        emit(const SalesmanDayInitial());
+        return;
+      }
+
+      if (trip.status == 'completed') {
+        emit(SalesmanDayCompleted(trip as TripModel));
+        return;
+      }
+
+      final activeTrip = trip as TripModel;
+
+      await _resumeTracking(activeTrip);
+
+      emit(SalesmanDayActive(activeTrip));
     } catch (e) {
       emit(SalesmanDayFailure(e.toString().replaceFirst('Exception: ', '')));
     }
+  }
+
+  Future<void> _resumeTracking(TripModel trip) async {
+    final locationsResult = await getTripLocations(trip.id);
+
+    locationsResult.fold(
+      (_) {
+        // If previous locations cannot be loaded,
+        // tracking will still resume from the current position.
+        _lastPosition = null;
+        _totalDistanceMeters = trip.totalDistance * 1000;
+      },
+      (locations) {
+        _totalDistanceMeters = trip.totalDistance * 1000;
+
+        if (locations.isNotEmpty) {
+          _lastPosition = Position(
+            latitude: locations.last.latitude,
+            longitude: locations.last.longitude,
+            timestamp: locations.last.timestamp,
+            accuracy: locations.last.accuracy ?? 0,
+            altitude: 0,
+            altitudeAccuracy: 0,
+            heading: 0,
+            headingAccuracy: 0,
+            speed: 0,
+            speedAccuracy: 0,
+          );
+        } else if (trip.startLatitude != null && trip.startLongitude != null) {
+          _lastPosition = Position(
+            latitude: trip.startLatitude!,
+            longitude: trip.startLongitude!,
+            timestamp: trip.startTime ?? DateTime.now(),
+            accuracy: 0,
+            altitude: 0,
+            altitudeAccuracy: 0,
+            heading: 0,
+            headingAccuracy: 0,
+            speed: 0,
+            speedAccuracy: 0,
+          );
+        }
+      },
+    );
+
+    trackingService.start(
+      onPosition: (position) {
+        final previousPosition = _lastPosition;
+
+        if (previousPosition != null) {
+          final segmentDistance = DistanceUtils.calculateDistanceInMeters(
+            startLatitude: previousPosition.latitude,
+            startLongitude: previousPosition.longitude,
+            endLatitude: position.latitude,
+            endLongitude: position.longitude,
+          );
+
+          _totalDistanceMeters += segmentDistance;
+        }
+
+        _lastPosition = position;
+
+        _saveLocation(tripId: trip.id, position: position);
+      },
+    );
   }
 
   Future<void> _onEndDayRequested(SalesmanEndDayRequested event, Emitter<SalesmanState> emit) async {
@@ -143,6 +238,16 @@ class SalesmanBloc extends Bloc<SalesmanEvent, SalesmanState> {
       }
 
       _lastPosition = position;
+
+      // Save the final GPS position before completing the trip.
+      await saveTripLocation(
+        SaveTripLocationParams(
+          tripId: event.tripId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          accuracy: position.accuracy,
+        ),
+      );
 
       final totalDistanceKm = _totalDistanceMeters / 1000;
 

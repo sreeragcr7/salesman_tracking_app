@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class SalesmanHeader extends StatelessWidget {
   final String name;
@@ -8,14 +9,35 @@ class SalesmanHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    final today = DateFormat('dd MMM yyyy').format(DateTime.now());
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Welcome, $name', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        Text('Welcome, $name', style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+
         const SizedBox(height: 8),
-        Text(email, style: TextStyle(color: Colors.grey.shade600)),
+
+        Text(email, style: textTheme.bodyMedium?.copyWith(color: textTheme.bodyMedium?.color?.withValues(alpha: 0.65))),
+
         const SizedBox(height: 32),
-        const Text('Today', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Today', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+            Text(
+              today,
+              style: textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: textTheme.bodyMedium?.color?.withValues(alpha: 0.65),
+              ),
+            ),
+          ],
+        ),
+
         const SizedBox(height: 16),
       ],
     );
