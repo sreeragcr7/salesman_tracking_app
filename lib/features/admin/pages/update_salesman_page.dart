@@ -3,6 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:salesman_tracking_app/core/validators/validators.dart';
+import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
+import 'package:salesman_tracking_app/core/widgets/app_text_field.dart';
+import 'package:salesman_tracking_app/core/widgets/primary_button.dart';
 
 import '../../../domain/usecases/media/upload_profile_image.dart';
 import '../../../init_dependencies.dart';
@@ -142,7 +146,7 @@ class _UpdateSalesmanPageState extends State<UpdateSalesmanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Update Salesman')),
+      appBar: const AppAppBar(title: 'Update Salesman'),
       body: BlocListener<AdminBloc, AdminState>(
         listener: _handleStateChange,
         child: BlocBuilder<AdminBloc, AdminState>(
@@ -201,66 +205,37 @@ class _UpdateSalesmanPageState extends State<UpdateSalesmanPage> {
 
                     const SizedBox(height: 24),
 
-                    TextFormField(
+                    AppTextField(
                       controller: _nameController,
+                      labelText: 'Name',
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter salesman name.';
-                        }
-
-                        return null;
-                      },
+                      validator: Validators.name,
                     ),
 
                     const SizedBox(height: 16),
 
-                    TextFormField(
+                    AppTextField(
                       controller: _emailController,
+                      labelText: 'Email',
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
-                      validator: (value) {
-                        final email = value?.trim() ?? '';
-
-                        if (email.isEmpty) {
-                          return 'Please enter email.';
-                        }
-
-                        if (!email.contains('@')) {
-                          return 'Please enter a valid email.';
-                        }
-
-                        return null;
-                      },
+                      validator: Validators.email,
                     ),
 
                     const SizedBox(height: 16),
 
-                    TextFormField(
+                    AppTextField(
                       controller: _passwordController,
+                      labelText: 'New Password',
+                      hintText: 'Enter new password',
+                      helperText: 'Only change the password if needed.',
                       obscureText: _obscurePassword,
                       textInputAction: TextInputAction.done,
-                      decoration: InputDecoration(
-                        labelText: 'New Password',
-                        hintText: 'Enter new password',
-                        helperText: 'Only change the password if needed.',
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          onPressed: isBusy ? null : _togglePasswordVisibility,
-                          icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                        ),
+                      suffixIcon: IconButton(
+                        onPressed: isBusy ? null : _togglePasswordVisibility,
+                        icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                       ),
-                      validator: (value) {
-                        final password = value?.trim() ?? '';
-
-                        if (password.isNotEmpty && password.length < 6) {
-                          return 'Password must be at least 6 characters.';
-                        }
-
-                        return null;
-                      },
+                      validator: (value) => Validators.password(value, required: false, minLength: 8),
                       onFieldSubmitted: (_) {
                         if (!isBusy) {
                           _updateSalesman();
@@ -270,21 +245,12 @@ class _UpdateSalesmanPageState extends State<UpdateSalesmanPage> {
 
                     const SizedBox(height: 24),
 
-                    SizedBox(
-                      height: 52,
-                      child: ElevatedButton.icon(
-                        onPressed: isBusy ? null : _updateSalesman,
-                        icon: isBusy
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Icon(Icons.save_outlined),
-                        label: Text(
-                          _isUploadingImage
-                              ? 'Uploading Image...'
-                              : isLoading
-                              ? 'Updating...'
-                              : 'Update Salesman',
-                        ),
-                      ),
+                    PrimaryButton(
+                      label: 'Update Salesman',
+                      loadingLabel: _isUploadingImage ? 'Uploading Image...' : 'Updating...',
+                      onPressed: _updateSalesman,
+                      isLoading: isBusy,
+                      icon: Icons.save_outlined,
                     ),
                   ],
                 ),

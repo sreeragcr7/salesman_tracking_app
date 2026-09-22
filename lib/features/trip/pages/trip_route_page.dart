@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
 import 'package:salesman_tracking_app/domain/usecases/media/get_visit_media.dart';
 import 'package:salesman_tracking_app/init_dependencies.dart';
 
@@ -194,7 +195,7 @@ class _TripRoutePageState extends State<TripRoutePage> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Daily Route')),
+        appBar: const AppAppBar(title: 'Daily Route'),
         body: const Center(child: CircularProgressIndicator()),
       );
     }

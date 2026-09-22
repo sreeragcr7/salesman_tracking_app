@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../visits/pages/add_visit_page.dart';
 
 class WorkDayCard extends StatelessWidget {
@@ -27,72 +28,96 @@ class WorkDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            dayCompleted
-                ? Icons.check_circle_outline
-                : dayStarted
-                ? Icons.location_on
-                : Icons.location_off_outlined,
-            size: 48,
-          ),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
-          const SizedBox(height: 12),
+    final Color statusColor;
+    final IconData statusIcon;
 
-          Text(
-            dayCompleted
-                ? 'Day completed'
-                : dayStarted
-                ? 'Day started'
-                : 'Day not started',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
+    if (dayCompleted) {
+      statusColor = AppColors.success;
+      statusIcon = Icons.check_circle_outline;
+    } else if (dayStarted) {
+      statusColor = colorScheme.primary;
+      statusIcon = Icons.location_on_outlined;
+    } else {
+      statusColor = colorScheme.onSurfaceVariant;
+      statusIcon = Icons.location_off_outlined;
+    }
 
-          const SizedBox(height: 8),
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.10), shape: BoxShape.circle),
+              child: Icon(statusIcon, size: 32, color: statusColor),
+            ),
 
-          Text(
-            dayCompleted
-                ? 'Your work day has ended for today.'
-                : dayStarted
-                ? 'Your work day has started.'
-                : 'Start your day to begin location tracking.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade600),
-          ),
+            const SizedBox(height: 14),
 
-          const SizedBox(height: 20),
+            Text(
+              dayCompleted
+                  ? 'Day completed'
+                  : dayStarted
+                  ? 'Day started'
+                  : 'Day not started',
+              style: textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
 
-          if (!dayStarted && !dayCompleted) _buildStartSection(),
+            const SizedBox(height: 6),
 
-          if (dayStarted && activeTripId != null) _buildActiveDaySection(context),
-        ],
+            Text(
+              dayCompleted
+                  ? 'Your work day has ended for today.'
+                  : dayStarted
+                  ? 'Your work day has started.'
+                  : 'Start your day to begin location tracking.',
+              textAlign: TextAlign.center,
+              style: textTheme.bodyMedium?.copyWith(color: textTheme.bodyMedium?.color?.withValues(alpha: 0.65)),
+            ),
+
+            const SizedBox(height: 20),
+
+            if (!dayStarted && !dayCompleted) _buildStartSection(context),
+
+            if (dayStarted && activeTripId != null) _buildActiveDaySection(context),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStartSection() {
+  Widget _buildStartSection(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     if (!canStartDay) {
-      return const SizedBox(
+      return SizedBox(
         width: double.infinity,
-        child: Text('Come back tomorrow to start your work day.', textAlign: TextAlign.center),
+        child: Text(
+          'Come back tomorrow to start your work day.',
+          textAlign: TextAlign.center,
+          style: textTheme.bodySmall?.copyWith(color: textTheme.bodySmall?.color?.withValues(alpha: 0.65)),
+        ),
       );
     }
 
     return SizedBox(
       width: double.infinity,
-      height: 50,
       child: FilledButton.icon(
         onPressed: isLoading ? null : onStartDay,
         icon: isLoading
-            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
             : const Icon(Icons.play_arrow_rounded),
         label: Text(isLoading ? 'STARTING...' : 'START DAY'),
       ),
@@ -100,11 +125,12 @@ class WorkDayCard extends StatelessWidget {
   }
 
   Widget _buildActiveDaySection(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
-          height: 50,
           child: FilledButton.icon(
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddVisitPage(tripId: activeTripId!)));
@@ -124,12 +150,20 @@ class WorkDayCard extends StatelessWidget {
             child: Container(
               alignment: Alignment.center,
               decoration: BoxDecoration(
+                color: colorScheme.error.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.red.shade300),
+                border: Border.all(color: colorScheme.error.withValues(alpha: 0.40)),
               ),
-              child: Text(
-                isEnding ? 'ENDING DAY...' : 'PRESS AND HOLD TO END DAY',
-                style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red.shade700),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.stop_circle_outlined, size: 20, color: colorScheme.error),
+                  const SizedBox(width: 8),
+                  Text(
+                    isEnding ? 'ENDING DAY...' : 'PRESS AND HOLD TO END DAY',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(color: colorScheme.error),
+                  ),
+                ],
               ),
             ),
           ),

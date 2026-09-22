@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/core/theme/app_colors.dart';
+import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
 import 'package:salesman_tracking_app/domain/usecases/media/upload_profile_image.dart';
 import 'package:salesman_tracking_app/domain/usecases/users/update_salesman.dart';
 import 'package:salesman_tracking_app/init_dependencies.dart';
@@ -8,7 +10,6 @@ import '../../../domain/usecases/users/create_salesman.dart';
 import '../../../domain/usecases/users/delete_salesman.dart';
 import '../../../domain/usecases/users/get_salesmen.dart';
 import '../../../domain/usecases/users/update_profile_image.dart';
-import '../../auth/bloc/auth_bloc.dart';
 import '../bloc/admin_bloc.dart';
 import '../pages/create_salesman_page.dart';
 import '../widgets/admin_dashboard_header.dart';
@@ -47,18 +48,7 @@ class _AdminHomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Salesman Tracking'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.read<AuthBloc>().add(const AuthLogoutRequested());
-            },
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-          ),
-        ],
-      ),
+      appBar: const AppAppBar(title: 'Salesman Tracking', showLogout: true),
       body: const Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -73,7 +63,11 @@ class _AdminHomeView extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openCreateSalesman(context),
         tooltip: 'Create Salesman',
-        child: const Icon(Icons.add),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        shape: const CircleBorder(),
+        elevation: 3,
+        child: const Icon(Icons.add, size: 28),
       ),
     );
   }

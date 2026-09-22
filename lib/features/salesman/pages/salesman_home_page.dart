@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
 import 'package:salesman_tracking_app/init_dependencies.dart';
 
 import '../../../core/services/location_service.dart';
@@ -79,18 +80,7 @@ class _SalesmanHomeView extends StatelessWidget {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Salesman Dashboard'),
-          actions: [
-            IconButton(
-              onPressed: () {
-                context.read<AuthBloc>().add(const AuthLogoutRequested());
-              },
-              icon: const Icon(Icons.logout),
-              tooltip: 'Logout',
-            ),
-          ],
-        ),
+        appBar: AppAppBar(title: 'Salesman Dashboard', showLogout: true),
         body: Padding(
           padding: const EdgeInsets.all(20),
           child: BlocBuilder<SalesmanBloc, SalesmanState>(
@@ -106,7 +96,7 @@ class _SalesmanHomeView extends StatelessWidget {
               final isEnding = state is SalesmanDayEnding;
 
               return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SalesmanHeader(name: salesmanName, email: salesmanEmail),
                   WorkDayCard(

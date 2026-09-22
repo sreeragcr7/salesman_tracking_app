@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'trip_info_item.dart';
 
 class TripInfoCard extends StatelessWidget {
@@ -7,7 +6,6 @@ class TripInfoCard extends StatelessWidget {
   final String distance;
   final String startTime;
   final String endTime;
-
   const TripInfoCard({
     super.key,
     required this.visitCount,
@@ -15,9 +13,10 @@ class TripInfoCard extends StatelessWidget {
     required this.startTime,
     required this.endTime,
   });
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
     return Positioned(
       left: 16,
       right: 16,
@@ -31,18 +30,21 @@ class TripInfoCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.route_outlined),
+                  Icon(Icons.route_outlined, color: theme.colorScheme.primary),
                   const SizedBox(width: 8),
-                  const Text('Daily Route', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Daily Route', style: textTheme.titleMedium),
                   const Spacer(),
-                  Text('$visitCount visits', style: TextStyle(color: Colors.grey.shade700)),
+                  Text(
+                    '$visitCount visits',
+                    style: textTheme.bodySmall?.copyWith(color: textTheme.bodySmall?.color?.withValues(alpha: 0.65)),
+                  ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
-                    child: TripInfoItem(icon: Icons.straighten, label: 'Distance', value: distance),
+                    child: TripInfoItem(icon: Icons.straighten_outlined, label: 'Distance', value: distance),
                   ),
                   Expanded(
                     child: TripInfoItem(icon: Icons.play_circle_outline, label: 'Started', value: startTime),

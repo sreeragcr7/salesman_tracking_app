@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
 import 'package:salesman_tracking_app/domain/usecases/media/get_visit_media.dart';
 import 'package:salesman_tracking_app/features/trip/pages/trip_route_page.dart';
 import 'package:salesman_tracking_app/init_dependencies.dart';
@@ -96,8 +97,8 @@ class _TripVisitsPageState extends State<TripVisitsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(DateFormat('dd MMMM yyyy').format(widget.trip.date)),
+      appBar: AppAppBar(
+        title: DateFormat('dd MMMM yyyy').format(widget.trip.date),
         actions: [
           IconButton(tooltip: 'View Route', icon: const Icon(Icons.location_on_rounded), onPressed: _openRoute),
         ],

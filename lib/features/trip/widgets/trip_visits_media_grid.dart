@@ -15,9 +15,9 @@ class TripVisitsMediaGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: media.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
+        crossAxisCount: 3,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
         childAspectRatio: 1,
       ),
       itemBuilder: (context, index) {
@@ -40,19 +40,21 @@ class _ImageMediaTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImagePage(imageUrl: media.mediaUrl)));
       },
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: Image.network(
           media.mediaUrl,
           fit: BoxFit.cover,
           errorBuilder: (_, _, _) {
             return Container(
-              color: Colors.grey.shade200,
-              child: const Center(child: Icon(Icons.broken_image_outlined, size: 40)),
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: Icon(Icons.broken_image_outlined, size: 30, color: theme.colorScheme.onSurfaceVariant),
             );
           },
         ),
@@ -68,17 +70,22 @@ class _VideoMediaTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenVideoPage(videoUrl: media.mediaUrl)));
       },
       child: Container(
-        decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)),
-        child: const Stack(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(Icons.video_library_outlined, size: 48),
-            Positioned(bottom: 10, child: Icon(Icons.play_circle_fill, size: 32)),
+            Icon(Icons.video_library_outlined, size: 32, color: theme.colorScheme.onSurfaceVariant),
+            Positioned(bottom: 8, child: Icon(Icons.play_circle_fill, size: 28, color: theme.colorScheme.primary)),
           ],
         ),
       ),

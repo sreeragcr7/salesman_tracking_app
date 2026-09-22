@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
 import 'package:salesman_tracking_app/domain/usecases/trips/get_today_trip_for_user.dart';
 import 'package:salesman_tracking_app/init_dependencies.dart';
 
@@ -33,7 +34,7 @@ class _SalesmanDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Salesman Details')),
+      appBar: const AppAppBar(title: 'Salesman Details'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
         child: Column(

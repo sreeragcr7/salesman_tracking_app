@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
+import 'package:salesman_tracking_app/core/widgets/primary_button.dart';
 
 import '../bloc/admin_bloc.dart';
 import '../widgets/create_salesman_header.dart';
@@ -84,7 +86,7 @@ class _CreateSalesmanPageState extends State<CreateSalesmanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Salesman')),
+      appBar: const AppAppBar(title: 'Create Salesman'),
       body: BlocListener<AdminBloc, AdminState>(
         listener: _handleStateChange,
         child: BlocBuilder<AdminBloc, AdminState>(
@@ -121,15 +123,12 @@ class _CreateSalesmanPageState extends State<CreateSalesmanPage> {
 
                     const SizedBox(height: 24),
 
-                    SizedBox(
-                      height: 52,
-                      child: ElevatedButton.icon(
-                        onPressed: isLoading ? null : _createSalesman,
-                        icon: isLoading
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Icon(Icons.person_add),
-                        label: Text(isLoading ? 'Creating...' : 'Create Salesman'),
-                      ),
+                    PrimaryButton(
+                      label: 'Create Salesman',
+                      loadingLabel: 'Creating...',
+                      onPressed: _createSalesman,
+                      isLoading: isLoading,
+                      icon: Icons.person_add,
                     ),
                   ],
                 ),

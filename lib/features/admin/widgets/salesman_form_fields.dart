@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:salesman_tracking_app/core/validators/validators.dart';
+import 'package:salesman_tracking_app/core/widgets/app_text_field.dart';
 
 class SalesmanFormFields extends StatelessWidget {
   final TextEditingController nameController;
@@ -24,91 +26,44 @@ class SalesmanFormFields extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextFormField(
+        AppTextField(
           controller: nameController,
+          labelText: 'Name',
+          hintText: 'Enter salesman name',
+          prefixIcon: Icons.person_outline,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-            labelText: 'Name',
-            hintText: 'Enter salesman name',
-            prefixIcon: Icon(Icons.person_outline),
-            border: OutlineInputBorder(),
-          ),
-          validator: _validateName,
+          validator: Validators.name,
         ),
 
         const SizedBox(height: 16),
 
-        TextFormField(
+        AppTextField(
           controller: emailController,
+          labelText: 'Email',
+          hintText: 'salesman@example.com',
+          prefixIcon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-            labelText: 'Email',
-            hintText: 'salesman@example.com',
-            prefixIcon: Icon(Icons.email_outlined),
-            border: OutlineInputBorder(),
-          ),
-          validator: _validateEmail,
+          validator: Validators.email,
         ),
 
         const SizedBox(height: 16),
 
-        TextFormField(
+        AppTextField(
           controller: passwordController,
-          obscureText: obscurePassword,
+          labelText: 'Password',
+          hintText: 'Enter password',
+          prefixIcon: Icons.lock_outline,
           textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => onSubmitted(),
-          decoration: InputDecoration(
-            labelText: 'Password',
-            hintText: 'Enter password',
-            prefixIcon: const Icon(Icons.lock_outline),
-            border: const OutlineInputBorder(),
-            suffixIcon: IconButton(
-              onPressed: onTogglePassword,
-              icon: Icon(obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-            ),
+          obscureText: obscurePassword,
+          suffixIcon: IconButton(
+            onPressed: onTogglePassword,
+            icon: Icon(obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
           ),
-          validator: _validatePassword,
+          validator: Validators.password,
+          onFieldSubmitted: (_) => onSubmitted(),
         ),
       ],
     );
-  }
-
-  String? _validateName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter a name.';
-    }
-
-    if (value.trim().length < 2) {
-      return 'Name must be at least 2 characters.';
-    }
-
-    return null;
-  }
-
-  String? _validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter an email.';
-    }
-
-    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-
-    if (!emailRegex.hasMatch(value.trim())) {
-      return 'Please enter a valid email.';
-    }
-
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a password.';
-    }
-
-    if (value.length < 8) {
-      return 'Password must be at least 8 characters.';
-    }
-
-    return null;
   }
 }

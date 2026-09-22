@@ -14,6 +14,9 @@ class SalesmanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     final hasProfileImage = salesman.profileImage != null && salesman.profileImage!.isNotEmpty;
 
     final status = SalesmanStatus.fromTrip(todayTrip);
@@ -21,39 +24,72 @@ class SalesmanCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         onTap: onTap,
         onLongPress: onLongPress,
+
         leading: CircleAvatar(
-          radius: 24,
+          radius: 26,
+          backgroundColor: theme.colorScheme.surfaceContainerHighest,
           backgroundImage: hasProfileImage ? NetworkImage(salesman.profileImage!) : null,
-          child: !hasProfileImage ? const Icon(Icons.person) : null,
+          child: !hasProfileImage ? Icon(Icons.person_outline, color: textTheme.bodyMedium?.color) : null,
         ),
+
         title: Text(
           salesman.name.isEmpty ? 'Unnamed Salesman' : salesman.name,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: textTheme.titleMedium,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(salesman.email),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(color: status.color, shape: BoxShape.circle),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  status.label,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: status.color),
-                ),
-              ],
-            ),
-          ],
+
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                salesman.email,
+                style: textTheme.bodySmall?.copyWith(color: textTheme.bodySmall?.color?.withValues(alpha: 0.65)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              _StatusBadge(label: status.label, color: status.color),
+            ],
+          ),
         ),
-        trailing: const Icon(Icons.chevron_right),
+
+        trailing: Icon(Icons.chevron_right, color: textTheme.bodyMedium?.color?.withValues(alpha: 0.55)),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color, fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }

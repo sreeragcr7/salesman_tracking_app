@@ -29,23 +29,39 @@ class VisitMediaSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Visit Media', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+        Text('Visit Media', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _MediaPreview(media: selectedMedia, onRemoveMedia: onRemoveMedia),
         const SizedBox(height: 16),
         Row(
           children: [
-            VisitMediaPickerButton(icon: Icons.camera_alt_outlined, label: 'Take Photo', onPressed: onTakePhoto),
+            Expanded(
+              child: VisitMediaPickerButton(
+                icon: Icons.camera_alt_outlined,
+                label: 'Take Photo',
+                onPressed: onTakePhoto,
+              ),
+            ),
             const SizedBox(width: 12),
-            VisitMediaPickerButton(icon: Icons.photo_library_outlined, label: 'Photo', onPressed: onPickPhoto),
+            Expanded(
+              child: VisitMediaPickerButton(icon: Icons.photo_library_outlined, label: 'Photo', onPressed: onPickPhoto),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           children: [
-            VisitMediaPickerButton(icon: Icons.videocam_outlined, label: 'Record Video', onPressed: onRecordVideo),
+            Expanded(
+              child: VisitMediaPickerButton(
+                icon: Icons.videocam_outlined,
+                label: 'Record Video',
+                onPressed: onRecordVideo,
+              ),
+            ),
             const SizedBox(width: 12),
-            VisitMediaPickerButton(icon: Icons.video_library_outlined, label: 'Video', onPressed: onPickVideo),
+            Expanded(
+              child: VisitMediaPickerButton(icon: Icons.video_library_outlined, label: 'Video', onPressed: onPickVideo),
+            ),
           ],
         ),
       ],
@@ -62,7 +78,7 @@ class _MediaPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (media.isEmpty) {
-      return _EmptyMediaPreview();
+      return const _EmptyMediaPreview();
     }
 
     return Wrap(
@@ -80,20 +96,24 @@ class _EmptyMediaPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Container(
       width: double.infinity,
       height: 180,
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.perm_media_outlined, size: 48, color: Colors.grey.shade500),
+          Icon(Icons.perm_media_outlined, size: 48, color: colorScheme.onSurfaceVariant),
           const SizedBox(height: 8),
-          Text('No media selected', style: TextStyle(color: Colors.grey.shade600)),
+          Text('No media selected', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
         ],
       ),
     );
@@ -114,6 +134,8 @@ class _MediaItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Stack(
       children: [
         ClipRRect(
@@ -121,11 +143,15 @@ class _MediaItem extends StatelessWidget {
           child: Container(
             width: 150,
             height: 150,
-            color: Colors.grey.shade200,
+            color: colorScheme.surfaceContainerHighest,
             child: _isVideo
-                ? const Column(
+                ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [Icon(Icons.video_file_outlined, size: 48), SizedBox(height: 6), Text('Video')],
+                    children: [
+                      Icon(Icons.video_file_outlined, size: 48, color: colorScheme.onSurfaceVariant),
+                      const SizedBox(height: 6),
+                      Text('Video', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                    ],
                   )
                 : Image.file(file, fit: BoxFit.cover),
           ),
@@ -136,7 +162,7 @@ class _MediaItem extends StatelessWidget {
           child: GestureDetector(
             onTap: onRemove,
             child: Container(
-              decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.55), shape: BoxShape.circle),
               padding: const EdgeInsets.all(5),
               child: const Icon(Icons.close, color: Colors.white, size: 18),
             ),

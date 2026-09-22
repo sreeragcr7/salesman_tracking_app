@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/core/validators/validators.dart';
+import 'package:salesman_tracking_app/core/widgets/app_text_field.dart';
+import 'package:salesman_tracking_app/core/widgets/primary_button.dart';
 import 'package:salesman_tracking_app/features/auth/bloc/auth_bloc.dart';
 
 class LoginPage extends StatefulWidget {
@@ -14,11 +17,19 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _obscurePassword = true;
+
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
   }
 
   void _login() {
@@ -67,57 +78,35 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 40),
 
-                      TextFormField(
+                      AppTextField(
                         controller: _emailController,
+                        labelText: 'Email',
                         keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(Icons.email_outlined),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Enter your email';
-                          }
-
-                          if (!value.contains('@')) {
-                            return 'Enter a valid email';
-                          }
-
-                          return null;
-                        },
+                        prefixIcon: Icons.email_outlined,
+                        validator: (value) => Validators.email(value, strict: false),
                       ),
 
                       const SizedBox(height: 16),
 
-                      TextFormField(
+                      AppTextField(
                         controller: _passwordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock_outline),
-                          border: OutlineInputBorder(),
+                        labelText: 'Password',
+                        obscureText: _obscurePassword,
+                        prefixIcon: Icons.lock_outline,
+                        suffixIcon: IconButton(
+                          onPressed: _togglePasswordVisibility,
+                          icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Enter your password';
-                          }
-
-                          return null;
-                        },
+                        validator: Validators.password,
                       ),
 
                       const SizedBox(height: 24),
 
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
-                          if (state is AuthLoading) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-                          return SizedBox(
-                            height: 52,
-                            child: ElevatedButton(onPressed: _login, child: const Text('LOGIN')),
-                          );
+                          final isLoading = state is AuthLoading;
+
+                          return PrimaryButton(label: 'LOGIN', onPressed: _login, isLoading: isLoading);
                         },
                       ),
                     ],

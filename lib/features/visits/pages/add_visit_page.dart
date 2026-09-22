@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
+import 'package:salesman_tracking_app/core/widgets/primary_button.dart';
 import 'package:salesman_tracking_app/domain/usecases/media/create_visit_media.dart';
 import 'package:salesman_tracking_app/domain/usecases/media/upload_visit_media.dart';
 import 'package:salesman_tracking_app/domain/usecases/visits/create_visit.dart';
@@ -146,7 +148,7 @@ class _AddVisitViewState extends State<_AddVisitView> {
     return BlocListener<VisitBloc, VisitState>(
       listener: _handleVisitState,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Add Visit')),
+        appBar: const AppAppBar(title: 'Add Visit'),
         body: SafeArea(
           child: Form(
             key: _formKey,
@@ -188,16 +190,12 @@ class _AddVisitViewState extends State<_AddVisitView> {
       builder: (context, state) {
         final isSubmitting = state is VisitSubmitting;
 
-        return SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: FilledButton.icon(
-            onPressed: isSubmitting ? null : _submitVisit,
-            icon: isSubmitting
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.check_circle_outline),
-            label: Text(isSubmitting ? 'Submitting...' : 'Submit Visit'),
-          ),
+        return PrimaryButton(
+          label: 'Submit Visit',
+          loadingLabel: 'Submitting...',
+          icon: Icons.check_circle_outline,
+          isLoading: isSubmitting,
+          onPressed: _submitVisit,
         );
       },
     );

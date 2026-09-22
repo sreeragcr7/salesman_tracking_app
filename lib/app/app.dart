@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/core/theme/app_theme.dart';
 import 'package:salesman_tracking_app/features/admin/pages/admin_home_page.dart';
 import 'package:salesman_tracking_app/features/auth/bloc/auth_bloc.dart';
 import 'package:salesman_tracking_app/features/auth/pages/login_page.dart';
@@ -16,7 +17,10 @@ class App extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Salesman-tracking-app',
-        theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
+        //App theme
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
         home: const Scaffold(body: _AuthGate()),
       ),
     );
