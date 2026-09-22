@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:salesman_tracking_app/domain/usecases/media/get_visit_media.dart';
+import 'package:salesman_tracking_app/init_dependencies.dart';
 
 import '../../../data/models/trip_location_model.dart';
 import '../../../data/models/trip_model.dart';
 import '../../../data/models/visit_media_model.dart';
 import '../../../data/models/visit_model.dart';
-import '../../../data/repositories/user_repository.dart';
+import '../../../domain/usecases/trips/get_trip_by_id.dart';
+import '../../../domain/usecases/trips/get_trip_locations.dart';
+import '../../../domain/usecases/visits/get_visits_for_trip.dart';
 import '../widgets/trip_info_card.dart';
 import '../widgets/trip_route_map.dart';
 
@@ -21,7 +25,11 @@ class TripRoutePage extends StatefulWidget {
 }
 
 class _TripRoutePageState extends State<TripRoutePage> {
-  final UserRepository _userRepository = UserRepository();
+  final GetTripById _getTripById = sl<GetTripById>();
+  final GetTripLocations _getTripLocations = sl<GetTripLocations>();
+  final GetVisitsForTrip _getVisitsForTrip = sl<GetVisitsForTrip>();
+  final GetVisitMedia _getVisitMedia = sl<GetVisitMedia>();
+
   final MapController _mapController = MapController();
 
   List<TripLocationModel> _locations = [];
@@ -41,20 +49,72 @@ class _TripRoutePageState extends State<TripRoutePage> {
 
   Future<void> _loadTripData() async {
     try {
-      final results = await Future.wait([
-        _userRepository.getTripById(widget.tripId),
-        _userRepository.getTripLocations(widget.tripId),
-        _userRepository.getVisitsForTrip(widget.tripId),
-      ]);
+      final tripResult = await _getTripById(widget.tripId);
+      final locationsResult = await _getTripLocations(widget.tripId);
+      final visitsResult = await _getVisitsForTrip(widget.tripId);
 
-      final trip = results[0] as TripModel;
-      final locations = results[1] as List<TripLocationModel>;
-      final visits = results[2] as List<VisitModel>;
+      TripModel? trip;
+      List<TripLocationModel> locations = [];
+      List<VisitModel> visits = [];
+
+      String? failureMessage;
+
+      tripResult.fold(
+        (failure) {
+          failureMessage = failure.message;
+        },
+        (result) {
+          trip = result as TripModel;
+        },
+      );
+
+      if (failureMessage != null) {
+        throw Exception(failureMessage);
+      }
+
+      locationsResult.fold(
+        (failure) {
+          failureMessage = failure.message;
+        },
+        (result) {
+          locations = result.cast<TripLocationModel>();
+        },
+      );
+
+      if (failureMessage != null) {
+        throw Exception(failureMessage);
+      }
+
+      visitsResult.fold(
+        (failure) {
+          failureMessage = failure.message;
+        },
+        (result) {
+          visits = result.cast<VisitModel>();
+        },
+      );
+
+      if (failureMessage != null) {
+        throw Exception(failureMessage);
+      }
 
       final mediaMap = <String, List<VisitMediaModel>>{};
 
       for (final visit in visits) {
-        mediaMap[visit.id] = await _userRepository.getVisitMedia(visit.id);
+        final mediaResult = await _getVisitMedia(visit.id);
+
+        mediaResult.fold(
+          (failure) {
+            failureMessage = failure.message;
+          },
+          (media) {
+            mediaMap[visit.id] = media.cast<VisitMediaModel>();
+          },
+        );
+
+        if (failureMessage != null) {
+          throw Exception(failureMessage);
+        }
       }
 
       if (!mounted) {

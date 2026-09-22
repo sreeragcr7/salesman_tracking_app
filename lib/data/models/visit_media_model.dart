@@ -1,16 +1,12 @@
-class VisitMediaModel {
-  final String id;
-  final String visitId;
-  final String mediaUrl;
-  final String mediaType;
-  final DateTime createdAt;
+import '../../domain/entities/visit_media.dart';
 
+class VisitMediaModel extends VisitMedia {
   const VisitMediaModel({
-    required this.id,
-    required this.visitId,
-    required this.mediaUrl,
-    required this.mediaType,
-    required this.createdAt,
+    required super.id,
+    required super.visitId,
+    required super.mediaUrl,
+    required super.mediaType,
+    required super.createdAt,
   });
 
   bool get isVideo => mediaType == 'video';

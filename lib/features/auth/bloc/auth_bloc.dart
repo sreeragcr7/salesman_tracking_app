@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:salesman_tracking_app/core/usecase/usecase.dart';
 import 'package:salesman_tracking_app/domain/entities/user.dart';
-import 'package:salesman_tracking_app/domain/usecases/get_current_user.dart';
-import 'package:salesman_tracking_app/domain/usecases/login.dart';
-import 'package:salesman_tracking_app/domain/usecases/logout.dart';
+import 'package:salesman_tracking_app/domain/usecases/auth/get_current_user.dart';
+import 'package:salesman_tracking_app/domain/usecases/auth/login.dart';
+import 'package:salesman_tracking_app/domain/usecases/auth/logout.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';

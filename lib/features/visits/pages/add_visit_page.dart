@@ -3,9 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:salesman_tracking_app/domain/usecases/media/create_visit_media.dart';
+import 'package:salesman_tracking_app/domain/usecases/media/upload_visit_media.dart';
+import 'package:salesman_tracking_app/domain/usecases/visits/create_visit.dart';
+import 'package:salesman_tracking_app/init_dependencies.dart';
 
 import '../../../core/services/location_service.dart';
-import '../../../data/repositories/user_repository.dart';
 import '../bloc/visit_bloc.dart';
 import '../widgets/visit_location_notice.dart';
 import '../widgets/visit_media_section.dart';
@@ -19,7 +22,12 @@ class AddVisitPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => VisitBloc(userRepository: UserRepository(), locationService: LocationService()),
+      create: (_) => VisitBloc(
+        createVisit: sl<CreateVisit>(),
+        uploadVisitMedia: sl<UploadVisitMedia>(),
+        createVisitMedia: sl<CreateVisitMedia>(),
+        locationService: LocationService(),
+      ),
       child: _AddVisitView(tripId: tripId),
     );
   }

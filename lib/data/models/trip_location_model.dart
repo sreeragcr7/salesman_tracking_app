@@ -1,18 +1,13 @@
-class TripLocationModel {
-  final String id;
-  final String tripId;
-  final double latitude;
-  final double longitude;
-  final DateTime timestamp;
-  final double? accuracy;
+import '../../domain/entities/trip_location.dart';
 
+class TripLocationModel extends TripLocation {
   const TripLocationModel({
-    required this.id,
-    required this.tripId,
-    required this.latitude,
-    required this.longitude,
-    required this.timestamp,
-    this.accuracy,
+    required super.id,
+    required super.tripId,
+    required super.latitude,
+    required super.longitude,
+    required super.timestamp,
+    super.accuracy,
   });
 
   factory TripLocationModel.fromJson(Map<String, dynamic> json) {

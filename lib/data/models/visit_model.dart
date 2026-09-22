@@ -1,22 +1,15 @@
-class VisitModel {
-  final String id;
-  final String tripId;
-  final String shopName;
-  final String? description;
-  final double latitude;
-  final double longitude;
-  final DateTime visitedAt;
-  final String? mediaUrl;
+import '../../domain/entities/visit.dart';
 
+class VisitModel extends Visit {
   const VisitModel({
-    required this.id,
-    required this.tripId,
-    required this.shopName,
-    this.description,
-    required this.latitude,
-    required this.longitude,
-    required this.visitedAt,
-    this.mediaUrl,
+    required super.id,
+    required super.tripId,
+    required super.shopName,
+    super.description,
+    required super.latitude,
+    required super.longitude,
+    required super.visitedAt,
+    super.mediaUrl,
   });
 
   factory VisitModel.fromJson(Map<String, dynamic> json) {

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/init_dependencies.dart';
 
 import '../../../core/services/location_service.dart';
 import '../../../core/services/location_tracking_service.dart';
-import '../../../data/repositories/user_repository.dart';
+import '../../../domain/usecases/trips/finish_day.dart';
+import '../../../domain/usecases/trips/get_today_trip.dart';
+import '../../../domain/usecases/trips/save_trip_location.dart';
+import '../../../domain/usecases/trips/start_day.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../bloc/salesman_bloc.dart';
 import '../widgets/end_day_confirmation_dialog.dart';
@@ -25,7 +29,10 @@ class SalesmanHomePage extends StatelessWidget {
 
     return BlocProvider(
       create: (_) => SalesmanBloc(
-        userRepository: UserRepository(),
+        startDay: sl<StartDay>(),
+        getTodayTrip: sl<GetTodayTrip>(),
+        saveTripLocation: sl<SaveTripLocation>(),
+        finishDay: sl<FinishDay>(),
         locationService: LocationService(),
         trackingService: LocationTrackingService(),
       )..add(const SalesmanDayStatusRequested()),

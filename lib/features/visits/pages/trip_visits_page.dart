@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:salesman_tracking_app/domain/usecases/media/get_visit_media.dart';
 import 'package:salesman_tracking_app/features/trip/pages/trip_route_page.dart';
+import 'package:salesman_tracking_app/init_dependencies.dart';
 
 import '../../../data/models/trip_model.dart';
 import '../../../data/models/visit_media_model.dart';
 import '../../../data/models/visit_model.dart';
-import '../../../data/repositories/user_repository.dart';
+import '../../../domain/usecases/visits/get_visits_for_trip.dart';
 import '../../trip/widgets/trip_visit_card.dart';
 
 class TripVisitsPage extends StatefulWidget {
@@ -18,7 +20,8 @@ class TripVisitsPage extends StatefulWidget {
 }
 
 class _TripVisitsPageState extends State<TripVisitsPage> {
-  final UserRepository _userRepository = UserRepository();
+  final GetVisitsForTrip _getVisitsForTrip = sl<GetVisitsForTrip>();
+  final GetVisitMedia _getVisitMedia = sl<GetVisitMedia>();
 
   List<VisitModel> _visits = [];
   Map<String, List<VisitMediaModel>> _visitMedia = {};
@@ -34,25 +37,46 @@ class _TripVisitsPageState extends State<TripVisitsPage> {
 
   Future<void> _loadVisits() async {
     try {
-      final visits = await _userRepository.getVisitsForTrip(widget.trip.id);
+      final visitsResult = await _getVisitsForTrip(widget.trip.id);
 
-      final mediaMap = <String, List<VisitMediaModel>>{};
+      await visitsResult.fold(
+        (failure) async {
+          if (!mounted) {
+            return;
+          }
 
-      for (final visit in visits) {
-        final media = await _userRepository.getVisitMedia(visit.id);
+          setState(() {
+            _isLoading = false;
+            _errorMessage = failure.message;
+          });
+        },
+        (visits) async {
+          final mediaMap = <String, List<VisitMediaModel>>{};
 
-        mediaMap[visit.id] = media;
-      }
+          for (final visit in visits) {
+            final mediaResult = await _getVisitMedia(visit.id);
 
-      if (!mounted) {
-        return;
-      }
+            mediaResult.fold(
+              (failure) {
+                mediaMap[visit.id] = [];
+              },
+              (media) {
+                mediaMap[visit.id] = media.cast<VisitMediaModel>();
+              },
+            );
+          }
 
-      setState(() {
-        _visits = visits;
-        _visitMedia = mediaMap;
-        _isLoading = false;
-      });
+          if (!mounted) {
+            return;
+          }
+
+          setState(() {
+            _visits = visits.cast<VisitModel>();
+            _visitMedia = mediaMap;
+            _isLoading = false;
+          });
+        },
+      );
     } catch (e) {
       if (!mounted) {
         return;

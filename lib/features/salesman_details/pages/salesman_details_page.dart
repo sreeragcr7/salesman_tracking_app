@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/init_dependencies.dart';
 
 import '../../../data/models/user_model.dart';
-import '../../../data/repositories/user_repository.dart';
+import '../../../domain/usecases/trips/get_working_trips.dart';
 import '../bloc/salesman_details_bloc.dart';
 import '../widgets/salesman_profile_header.dart';
 import '../widgets/working_history_section.dart';
@@ -16,7 +17,7 @@ class SalesmanDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
-          SalesmanDetailsBloc(userRepository: UserRepository())
+          SalesmanDetailsBloc(getWorkingTrips: sl<GetWorkingTrips>())
             ..add(SalesmanWorkingDatesRequested(userId: salesman.uid)),
       child: _SalesmanDetailsView(salesman: salesman),
     );
