@@ -1,17 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/data/models/user_model.dart';
 import 'package:salesman_tracking_app/features/admin/widgets/delete_salesman_dialog.dart';
 import 'package:salesman_tracking_app/features/admin/widgets/salesman_actions_sheet.dart';
 
+import '../../../domain/entities/trip.dart';
+import '../../../domain/usecases/trips/get_today_trip_for_user.dart';
+import '../../../init_dependencies.dart';
 import '../../salesman_details/pages/salesman_details_page.dart';
 import '../bloc/admin_bloc.dart';
 import 'salesman_card.dart';
 
-class SalesmanListSection extends StatelessWidget {
+class SalesmanListSection extends StatefulWidget {
   const SalesmanListSection({super.key});
 
+  @override
+  State<SalesmanListSection> createState() => _SalesmanListSectionState();
+}
+
+class _SalesmanListSectionState extends State<SalesmanListSection> {
+  final Map<String, Trip?> _todayTrips = {};
+
   Future<void> _refresh(BuildContext context) async {
+    setState(() {
+      _todayTrips.clear();
+    });
+
     context.read<AdminBloc>().add(const AdminSalesmanRequested());
+  }
+
+  Future<void> _loadTodayTrips(List<UserModel> salesmen) async {
+    final getTodayTripForUser = sl<GetTodayTripForUser>();
+
+    final results = await Future.wait(
+      salesmen.map((salesman) async {
+        final result = await getTodayTripForUser(salesman.uid);
+
+        return MapEntry(salesman.uid, result.fold((failure) => null, (trip) => trip));
+      }),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _todayTrips.addEntries(results);
+    });
   }
 
   @override
@@ -29,6 +64,10 @@ class SalesmanListSection extends StatelessWidget {
         if (state is AdminSalesmanLoaded) {
           if (state.salesman.isEmpty) {
             return const _EmptyState();
+          }
+
+          if (_todayTrips.length != state.salesman.length) {
+            _loadTodayTrips(state.salesman);
           }
 
           return RefreshIndicator(
@@ -53,6 +92,7 @@ class SalesmanListSection extends StatelessWidget {
                   background: const _DeleteBackground(),
                   child: SalesmanCard(
                     salesman: salesman,
+                    todayTrip: _todayTrips[salesman.uid],
                     onTap: () {
                       Navigator.of(
                         context,

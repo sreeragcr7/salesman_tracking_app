@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/features/admin/bloc/admin_bloc.dart';
+import 'package:salesman_tracking_app/features/admin/pages/update_salesman_page.dart';
 
 import '../../../data/models/user_model.dart';
 
@@ -17,7 +20,14 @@ void showSalesmanActionsSheet(BuildContext context, UserModel salesman) {
               onTap: () {
                 Navigator.of(sheetContext).pop();
 
-                // Update screen will be added next.
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<AdminBloc>(),
+                      child: UpdateSalesmanPage(salesman: salesman),
+                    ),
+                  ),
+                );
               },
             ),
             const SizedBox(height: 8),

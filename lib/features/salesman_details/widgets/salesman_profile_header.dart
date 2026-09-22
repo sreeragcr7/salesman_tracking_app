@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:salesman_tracking_app/core/widgets/salesman_status.dart';
 
 import '../../../data/models/user_model.dart';
+import '../../../domain/entities/trip.dart';
 
 class SalesmanProfileHeader extends StatelessWidget {
   final UserModel salesman;
+  final Trip? todayTrip;
 
-  const SalesmanProfileHeader({super.key, required this.salesman});
+  const SalesmanProfileHeader({super.key, required this.salesman, required this.todayTrip});
 
   @override
   Widget build(BuildContext context) {
     final hasProfileImage = salesman.profileImage != null && salesman.profileImage!.isNotEmpty;
+
+    final status = SalesmanStatus.fromTrip(todayTrip);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -34,8 +39,21 @@ class SalesmanProfileHeader extends StatelessWidget {
                 style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 6),
-              Text(salesman.role, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(color: status.color, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 7),
+                  Text(
+                    status.label,
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: status.color),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

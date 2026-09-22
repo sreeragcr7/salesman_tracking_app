@@ -12,6 +12,8 @@ abstract interface class TripRemoteDataSource {
 
   Future<TripModel?> getTodayTrip();
 
+  Future<TripModel?> getTodayTripForUser(String userId);
+
   Future<TripModel> finishDay({
     required String tripId,
     required double latitude,
@@ -194,5 +196,24 @@ class TripRemoteDataSourceImpl implements TripRemoteDataSource {
     final response = await supabase.from('trips').select().eq('id', tripId).single();
 
     return TripModel.fromJson(Map<String, dynamic>.from(response));
+  }
+
+  @override
+  Future<TripModel?> getTodayTripForUser(String userId) async {
+    final today = DateTime.now().toIso8601String().split('T').first;
+
+    final response = await supabase
+        .from('trips')
+        .select()
+        .eq('user_id', userId)
+        .eq('date', today)
+        .order('created_at', ascending: false)
+        .limit(1);
+
+    if (response.isEmpty) {
+      return null;
+    }
+
+    return TripModel.fromJson(Map<String, dynamic>.from(response.first));
   }
 }

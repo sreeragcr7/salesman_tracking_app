@@ -29,7 +29,9 @@ void _initUsers() {
     ..registerFactory<GetSalesmen>(() => GetSalesmen(sl<UserRepository>()))
     ..registerFactory<CreateSalesman>(() => CreateSalesman(sl<UserRepository>()))
     ..registerFactory<DeleteSalesman>(() => DeleteSalesman(sl<UserRepository>()))
-    ..registerFactory<UpdateProfileImage>(() => UpdateProfileImage(sl<UserRepository>()));
+    ..registerFactory<UpdateProfileImage>(() => UpdateProfileImage(sl<UserRepository>()))
+    ..registerFactory<UpdateSalesman>(() => UpdateSalesman(sl<UserRepository>()))
+    ;
 }
 
 void _initTrips() {
@@ -40,6 +42,7 @@ void _initTrips() {
     ..registerFactory<StartDay>(() => StartDay(sl<TripRepository>()))
     ..registerFactory<GetActiveTripForToday>(() => GetActiveTripForToday(sl<TripRepository>()))
     ..registerFactory<GetTodayTrip>(() => GetTodayTrip(sl<TripRepository>()))
+    ..registerFactory<GetTodayTripForUser>(() => GetTodayTripForUser(sl<TripRepository>()))
     ..registerFactory<FinishDay>(() => FinishDay(sl<TripRepository>()))
     ..registerFactory<SaveTripLocation>(() => SaveTripLocation(sl<TripRepository>()))
     ..registerFactory<GetTripLocations>(() => GetTripLocations(sl<TripRepository>()))

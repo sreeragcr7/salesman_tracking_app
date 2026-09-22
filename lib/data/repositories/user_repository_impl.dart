@@ -62,4 +62,27 @@ class UserRepositoryImpl implements UserRepository {
       return Left(ServerFailure(e.toString().replaceFirst('Exception: ', '')));
     }
   }
+
+  @override
+  Future<Either<TFailure, void>> updateSalesman({
+    required String userId,
+    required String name,
+    required String email,
+    String? password,
+    String? profileImage,
+  }) async {
+    try {
+      await remoteDataSource.updateSalesman(
+        userId: userId,
+        name: name,
+        email: email,
+        password: password,
+        profileImage: profileImage,
+      );
+
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString().replaceFirst('Exception: ', '')));
+    }
+  }
 }

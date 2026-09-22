@@ -10,6 +10,7 @@ import 'package:salesman_tracking_app/domain/usecases/users/create_salesman.dart
 import 'package:salesman_tracking_app/domain/usecases/users/delete_salesman.dart';
 import 'package:salesman_tracking_app/domain/usecases/users/get_salesmen.dart';
 import 'package:salesman_tracking_app/domain/usecases/users/update_profile_image.dart';
+import 'package:salesman_tracking_app/domain/usecases/users/update_salesman.dart';
 
 part 'admin_event.dart';
 part 'admin_state.dart';
@@ -17,6 +18,7 @@ part 'admin_state.dart';
 class AdminBloc extends Bloc<AdminEvent, AdminState> {
   final GetSalesmen getSalesmen;
   final CreateSalesman createSalesman;
+  final UpdateSalesman updateSalesman;
   final DeleteSalesman deleteSalesman;
   final UploadProfileImage uploadProfileImage;
   final UpdateProfileImage updateProfileImage;
@@ -27,10 +29,12 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     required this.deleteSalesman,
     required this.uploadProfileImage,
     required this.updateProfileImage,
+    required this.updateSalesman,
   }) : super(const AdminInitial()) {
     on<AdminSalesmanRequested>(_onSalesmanRequested);
     on<AdminSalesmanCreateRequested>(_onSalesmanCreateRequested);
     on<AdminSalesmanDeleteRequested>(_onSalesmanDeleteRequested);
+    on<AdminSalesmanUpdateRequested>(_onSalesmanUpdateRequested);
   }
 
   Future<void> _onSalesmanRequested(AdminSalesmanRequested event, Emitter<AdminState> emit) async {
@@ -86,6 +90,38 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
           }
         }
 
+        final salesmenResult = await getSalesmen(const NoParams());
+
+        salesmenResult.fold(
+          (failure) {
+            emit(AdminSalesmenFailure(failure.message));
+          },
+          (salesmen) {
+            emit(AdminSalesmanLoaded(salesmen.cast<UserModel>()));
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _onSalesmanUpdateRequested(AdminSalesmanUpdateRequested event, Emitter<AdminState> emit) async {
+    emit(const AdminSalesmanLoading());
+
+    final result = await updateSalesman(
+      UpdateSalesmanParams(
+        userId: event.userId,
+        name: event.name,
+        email: event.email,
+        password: event.password,
+        profileImage: event.profileImage,
+      ),
+    );
+
+    await result.fold(
+      (failure) async {
+        emit(AdminSalesmenFailure(failure.message));
+      },
+      (_) async {
         final salesmenResult = await getSalesmen(const NoParams());
 
         salesmenResult.fold(

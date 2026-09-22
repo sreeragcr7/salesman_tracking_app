@@ -11,9 +11,17 @@ abstract interface class UserRemoteDataSource {
     String? profileImage,
   });
 
-  Future<void> deleteSalesman(String userId);
-
   Future<void> updateProfileImage({required String userId, required String imageUrl});
+
+  Future<void> updateSalesman({
+    required String userId,
+    required String name,
+    required String email,
+    String? password,
+    String? profileImage,
+  });
+
+  Future<void> deleteSalesman(String userId);
 }
 
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
@@ -95,6 +103,37 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       }
 
       throw Exception('Unable to delete salesman.');
+    }
+  }
+
+  @override
+  Future<void> updateSalesman({
+    required String userId,
+    required String name,
+    required String email,
+    String? password,
+    String? profileImage,
+  }) async {
+    final body = <String, dynamic>{'action': 'update', 'userId': userId, 'name': name, 'email': email};
+
+    if (password != null && password.isNotEmpty) {
+      body['password'] = password;
+    }
+
+    if (profileImage != null && profileImage.isNotEmpty) {
+      body['profileImage'] = profileImage;
+    }
+
+    final response = await supabase.functions.invoke('admin-users', body: body);
+
+    if (response.status != 200) {
+      final data = response.data;
+
+      if (data is Map && data['error'] != null) {
+        throw Exception(data['error']);
+      }
+
+      throw Exception('Unable to update salesman.');
     }
   }
 }

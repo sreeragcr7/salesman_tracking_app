@@ -11,20 +11,21 @@ final class SalesmanDetailsInitial extends SalesmanDetailsState {
   const SalesmanDetailsInitial();
 }
 
-class SalesmanDetailsLoading extends SalesmanDetailsState {
+final class SalesmanDetailsLoading extends SalesmanDetailsState {
   const SalesmanDetailsLoading();
 }
 
-class SalesmanDetailsLoaded extends SalesmanDetailsState {
-  const SalesmanDetailsLoaded({required this.trips});
+final class SalesmanDetailsLoaded extends SalesmanDetailsState {
+  const SalesmanDetailsLoaded({required this.trips, required this.todayTrip});
 
-  final List<TripModel>trips;
+  final List<TripModel> trips;
+  final Trip? todayTrip;
 
   @override
-  List<Object?> get props => [trips];
+  List<Object?> get props => [trips, todayTrip];
 }
 
-class SalesmanDetailsFailure extends SalesmanDetailsState {
+final class SalesmanDetailsFailure extends SalesmanDetailsState {
   final String message;
 
   const SalesmanDetailsFailure(this.message);

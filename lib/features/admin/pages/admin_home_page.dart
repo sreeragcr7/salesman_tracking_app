@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:salesman_tracking_app/domain/usecases/media/upload_profile_image.dart';
+import 'package:salesman_tracking_app/domain/usecases/users/update_salesman.dart';
 import 'package:salesman_tracking_app/init_dependencies.dart';
 
 import '../../../domain/usecases/users/create_salesman.dart';
@@ -22,6 +23,7 @@ class AdminHomePage extends StatelessWidget {
       create: (_) => AdminBloc(
         getSalesmen: sl<GetSalesmen>(),
         createSalesman: sl<CreateSalesman>(),
+        updateSalesman: sl<UpdateSalesman>(),
         deleteSalesman: sl<DeleteSalesman>(),
         uploadProfileImage: sl<UploadProfileImage>(),
         updateProfileImage: sl<UpdateProfileImage>(),

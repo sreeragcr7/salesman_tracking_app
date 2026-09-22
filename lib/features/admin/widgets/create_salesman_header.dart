@@ -7,8 +7,6 @@ class CreateSalesmanHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Column(
       children: [
-        Icon(Icons.person_add_alt_1, size: 64),
-        SizedBox(height: 16),
         Text(
           'Add New Salesman',
           textAlign: TextAlign.center,

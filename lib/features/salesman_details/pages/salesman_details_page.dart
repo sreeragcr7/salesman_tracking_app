@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/domain/usecases/trips/get_today_trip_for_user.dart';
 import 'package:salesman_tracking_app/init_dependencies.dart';
 
 import '../../../data/models/user_model.dart';
@@ -17,7 +18,7 @@ class SalesmanDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
-          SalesmanDetailsBloc(getWorkingTrips: sl<GetWorkingTrips>())
+          SalesmanDetailsBloc(getWorkingTrips: sl<GetWorkingTrips>(), getTodayTripForUser: sl<GetTodayTripForUser>())
             ..add(SalesmanWorkingDatesRequested(userId: salesman.uid)),
       child: _SalesmanDetailsView(salesman: salesman),
     );
@@ -38,7 +39,15 @@ class _SalesmanDetailsView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SalesmanProfileHeader(salesman: salesman),
+            BlocBuilder<SalesmanDetailsBloc, SalesmanDetailsState>(
+              builder: (context, state) {
+                if (state is SalesmanDetailsLoaded) {
+                  return SalesmanProfileHeader(salesman: salesman, todayTrip: state.todayTrip);
+                }
+
+                return SalesmanProfileHeader(salesman: salesman, todayTrip: null);
+              },
+            ),
             const SizedBox(height: 32),
             const WorkingHistorySection(),
           ],

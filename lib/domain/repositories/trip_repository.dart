@@ -12,6 +12,8 @@ abstract interface class TripRepository {
 
   Future<Either<TFailure, Trip?>> getTodayTrip();
 
+  Future<Either<TFailure, Trip?>> getTodayTripForUser(String userId);
+
   Future<Either<TFailure, Trip>> finishDay({
     required String tripId,
     required double latitude,

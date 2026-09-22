@@ -35,8 +35,10 @@ import 'package:salesman_tracking_app/domain/usecases/users/create_salesman.dart
 import 'package:salesman_tracking_app/domain/usecases/users/delete_salesman.dart';
 import 'package:salesman_tracking_app/domain/usecases/users/get_salesmen.dart';
 import 'package:salesman_tracking_app/domain/usecases/users/update_profile_image.dart';
+import 'package:salesman_tracking_app/domain/usecases/users/update_salesman.dart';
 import 'package:salesman_tracking_app/domain/usecases/visits/create_visit.dart';
 import 'package:salesman_tracking_app/domain/usecases/visits/get_visits_for_trip.dart';
+import 'domain/usecases/trips/get_today_trip_for_user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 //Part

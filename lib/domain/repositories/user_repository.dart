@@ -15,4 +15,12 @@ abstract interface class UserRepository {
   Future<Either<TFailure, void>> deleteSalesman(String userId);
 
   Future<Either<TFailure, void>> updateProfileImage({required String userId, required String imageUrl});
+
+  Future<Either<TFailure, void>> updateSalesman({
+    required String userId,
+    required String name,
+    required String email,
+    String? password,
+    String? profileImage,
+  });
 }

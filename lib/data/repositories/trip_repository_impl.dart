@@ -1,5 +1,3 @@
-
-
 import 'package:fpdart/fpdart.dart';
 import 'package:salesman_tracking_app/core/errors/failures.dart';
 import 'package:salesman_tracking_app/data/datasources/trip_remote_datasource.dart';
@@ -113,6 +111,17 @@ class TripRepositoryImpl implements TripRepository {
   Future<Either<TFailure, Trip>> getTripById(String tripId) async {
     try {
       final trip = await remoteDataSource.getTripById(tripId);
+
+      return Right(trip);
+    } catch (e) {
+      return Left(ServerFailure(e.toString().replaceFirst('Exception: ', '')));
+    }
+  }
+
+  @override
+  Future<Either<TFailure, Trip?>> getTodayTripForUser(String userId) async {
+    try {
+      final trip = await remoteDataSource.getTodayTripForUser(userId);
 
       return Right(trip);
     } catch (e) {
