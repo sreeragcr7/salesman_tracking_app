@@ -24,6 +24,10 @@ class VisitDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.45,
       minChildSize: 0.30,
@@ -31,9 +35,9 @@ class VisitDetailsSheet extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: SingleChildScrollView(
             controller: scrollController,
@@ -41,13 +45,13 @@ class VisitDetailsSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHandle(),
+                _buildHandle(context),
                 const SizedBox(height: 18),
-                _buildShopName(),
+                _buildShopName(context, textTheme, colorScheme),
                 const SizedBox(height: 8),
-                _buildVisitedTime(),
-                if (_hasDescription) ...[const SizedBox(height: 16), _buildDescription()],
-                if (media.isNotEmpty) ...[const SizedBox(height: 18), _buildMedia()],
+                _buildVisitedTime(context, textTheme),
+                if (_hasDescription) ...[const SizedBox(height: 16), _buildDescription(context, textTheme)],
+                if (media.isNotEmpty) ...[const SizedBox(height: 18), _buildMedia(context, textTheme)],
                 const SizedBox(height: 20),
               ],
             ),
@@ -61,57 +65,64 @@ class VisitDetailsSheet extends StatelessWidget {
     return visit.description != null && visit.description!.trim().isNotEmpty;
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Center(
       child: Container(
         width: 40,
         height: 4,
-        decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.20),
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }
 
-  Widget _buildShopName() {
+  Widget _buildShopName(BuildContext context, TextTheme textTheme, ColorScheme colorScheme) {
     return Row(
       children: [
-        const Icon(Icons.storefront_outlined, size: 22),
+        Icon(Icons.storefront_outlined, size: 22, color: colorScheme.primary),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(visit.shopName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          child: Text(visit.shopName, style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         ),
       ],
     );
   }
 
-  Widget _buildVisitedTime() {
+  Widget _buildVisitedTime(BuildContext context, TextTheme textTheme) {
+    final secondaryColor = textTheme.bodyMedium?.color?.withValues(alpha: 0.65);
+
     return Row(
       children: [
-        Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
+        Icon(Icons.access_time, size: 16, color: secondaryColor),
         const SizedBox(width: 6),
         Text(
           DateFormat('dd MMM yyyy • hh:mm a').format(visit.visitedAt.toLocal()),
-          style: TextStyle(color: Colors.grey.shade600),
+          style: textTheme.bodyMedium?.copyWith(color: secondaryColor),
         ),
       ],
     );
   }
 
-  Widget _buildDescription() {
+  Widget _buildDescription(BuildContext context, TextTheme textTheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Description', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+        Text('Description', style: textTheme.titleMedium?.copyWith(fontSize: 15, fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        Text(visit.description!, style: const TextStyle(fontSize: 14)),
+        Text(visit.description!, style: textTheme.bodyMedium?.copyWith(fontSize: 14)),
       ],
     );
   }
 
-  Widget _buildMedia() {
+  Widget _buildMedia(BuildContext context, TextTheme textTheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Media', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+        Text('Media', style: textTheme.titleMedium?.copyWith(fontSize: 15, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         VisitMediaGrid(media: media, thumbnailSize: 80),
       ],

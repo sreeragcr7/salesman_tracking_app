@@ -1,64 +1,162 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+# ============================================================
+# Flutter / Dart
+# ============================================================
 
-# IntelliJ / Android Studio
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# VS Code
-.vscode/
-
-# Flutter / Dart / Pub
-**/doc/api/
-**/ios/Flutter/.last_build_id
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
-/coverage/
+build/
 
-# Flutter generated files
-app.*.symbols
-app.*.map.json
+# Generated files
+*.g.dart
+*.freezed.dart
 
-# Android build artifacts
-/android/app/debug
-/android/app/profile
-/android/app/release
+# Coverage
+coverage/
 
-# Android local configuration
-**/local.properties
-**/key.properties
-**/*.keystore
-**/*.jks
+# ============================================================
+# Flutter/Dart tooling
+# ============================================================
 
-# Environment files
+.packages
+pubspec.lock
+
+# ============================================================
+# Android
+# ============================================================
+
+.gradle/
+android/.gradle/
+android/local.properties
+
+# Android build outputs
+android/app/build/
+android/build/
+android/.cxx/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Keystores / signing files
+*.jks
+*.keystore
+key.properties
+
+# ============================================================
+# iOS
+# ============================================================
+
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# Xcode
+DerivedData/
+*.xcuserstate
+*.xcuserdata/
+
+# ============================================================
+# macOS
+# ============================================================
+
+macos/Pods/
+macos/Flutter/ephemeral/
+
+# ============================================================
+# Windows
+# ============================================================
+
+windows/flutter/ephemeral/
+
+# ============================================================
+# Linux
+# ============================================================
+
+linux/flutter/ephemeral/
+
+# ============================================================
+# Web
+# ============================================================
+
+# ============================================================
+# VS Code
+# ============================================================
+
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+
+# If you want to keep VS Code launch/settings files in Git,
+# remove the line above and use the more specific rules below.
+# .vscode/*.json
+# !.vscode/launch.json
+# !.vscode/settings.json
+
+# ============================================================
+# Environment / Secrets / Local configuration
+# ============================================================
+
 .env
 .env.*
 !.env.example
 
-# Node
-node_modules/
+# Local Supabase configuration
+config/local_config.json
+config/local_config.ps1
 
-# Supabase local files
+# Other local configuration
+*.local
+*.local.json
+*.local.yaml
+*.local.yml
+
+# ============================================================
+# Firebase / Google local configuration
+# ============================================================
+
+google-services.json
+GoogleService-Info.plist
+
+# ============================================================
+# Logs / temporary files
+# ============================================================
+
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ============================================================
+# Node / JavaScript
+# ============================================================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ============================================================
+# Supabase local development
+# ============================================================
+
 supabase/.temp/
 supabase/.branches/
 
-# IDE / OS
-.DS_Store
-Thumbs.db
+# ============================================================
+# OS-specific files
+# ============================================================
+
+desktop.ini
+$RECYCLE.BIN/

@@ -27,11 +27,11 @@ class MediaRemoteDataSourceImpl implements MediaRemoteDataSource {
   Future<String> uploadProfileImage({required String userId, required File file}) async {
     final extension = file.path.split('.').last.toLowerCase();
 
-    final storagePath = '$userId/profile.$extension';
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
 
-    await supabase.storage
-        .from('profile-images')
-        .upload(storagePath, file, fileOptions: const FileOptions(upsert: true));
+    final storagePath = '$userId/profile_$timestamp.$extension';
+
+    await supabase.storage.from('profile-images').upload(storagePath, file);
 
     return supabase.storage.from('profile-images').getPublicUrl(storagePath);
   }

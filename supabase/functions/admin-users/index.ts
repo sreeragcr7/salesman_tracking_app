@@ -364,14 +364,164 @@ Deno.serve(async (req) => {
         );
       }
 
-      const { error } = await adminClient.auth.admin.deleteUser(
+      // Get the profile image before deleting the profile.
+      const {
+        data: profile,
+        error: profileError,
+      } = await adminClient
+        .from("profiles")
+        .select("profile_image")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (profileError) {
+        return new Response(
+          JSON.stringify({
+            error: profileError.message,
+          }),
+          {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+      }
+
+      // Get all trips belonging to the salesman.
+      const {
+        data: trips,
+        error: tripsError,
+      } = await adminClient
+        .from("trips")
+        .select("id")
+        .eq("user_id", userId);
+
+      if (tripsError) {
+        return new Response(
+          JSON.stringify({
+            error: tripsError.message,
+          }),
+          {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+      }
+
+      // Delete visit media belonging to each trip.
+      for (const trip of trips ?? []) {
+        const tripId = trip.id;
+
+        const {
+          data: files,
+          error: listError,
+        } = await adminClient.storage
+          .from("visit-media")
+          .list(tripId);
+
+        if (listError) {
+          return new Response(
+            JSON.stringify({
+              error: listError.message,
+            }),
+            {
+              status: 400,
+              headers: {
+                ...corsHeaders,
+                "Content-Type": "application/json",
+              },
+            },
+          );
+        }
+
+        if (files && files.length > 0) {
+          const filePaths = files
+            .filter((file) => file.name)
+            .map(
+              (file) => `${tripId}/${file.name}`,
+            );
+
+          if (filePaths.length > 0) {
+            const {
+              error: removeError,
+            } = await adminClient.storage
+              .from("visit-media")
+              .remove(filePaths);
+
+            if (removeError) {
+              return new Response(
+                JSON.stringify({
+                  error: removeError.message,
+                }),
+                {
+                  status: 400,
+                  headers: {
+                    ...corsHeaders,
+                    "Content-Type": "application/json",
+                  },
+                },
+              );
+            }
+          }
+        }
+      }
+
+      // Delete the salesman profile image if one exists.
+      if (profile?.profile_image) {
+        const profileImageUrl = profile.profile_image;
+
+        const marker = "/storage/v1/object/public/profile-images/";
+
+        const markerIndex = profileImageUrl.indexOf(marker);
+
+        if (markerIndex !== -1) {
+          const filePath = decodeURIComponent(
+            profileImageUrl.substring(
+              markerIndex + marker.length,
+            ),
+          );
+
+          if (filePath) {
+            const {
+              error: removeProfileImageError,
+            } = await adminClient.storage
+              .from("profile-images")
+              .remove([filePath]);
+
+            if (removeProfileImageError) {
+              return new Response(
+                JSON.stringify({
+                  error: removeProfileImageError.message,
+                }),
+                {
+                  status: 400,
+                  headers: {
+                    ...corsHeaders,
+                    "Content-Type": "application/json",
+                  },
+                },
+              );
+            }
+          }
+        }
+      }
+
+      // Finally delete the Auth user.
+      const {
+        error: deleteUserError,
+      } = await adminClient.auth.admin.deleteUser(
         userId,
       );
 
-      if (error) {
+      if (deleteUserError) {
         return new Response(
           JSON.stringify({
-            error: error.message,
+            error: deleteUserError.message,
           }),
           {
             status: 400,

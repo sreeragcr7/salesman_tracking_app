@@ -148,18 +148,15 @@ class TripRemoteDataSourceImpl implements TripRemoteDataSource {
     required double longitude,
     required double totalDistance,
   }) async {
-    final response = await supabase
-        .from('trips')
-        .update({
-          'end_time': DateTime.now().toUtc().toIso8601String(),
-          'end_latitude': latitude,
-          'end_longitude': longitude,
-          'total_distance': totalDistance,
-          'status': 'completed',
-        })
-        .eq('id', tripId)
-        .select()
-        .single();
+    final response = await supabase.rpc(
+      'finish_trip',
+      params: {
+        'p_trip_id': tripId,
+        'p_end_latitude': latitude,
+        'p_end_longitude': longitude,
+        'p_total_distance': totalDistance,
+      },
+    );
 
     return TripModel.fromJson(Map<String, dynamic>.from(response));
   }

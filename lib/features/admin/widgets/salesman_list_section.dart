@@ -121,6 +121,14 @@ class _SalesmanListSectionState extends State<SalesmanListSection> {
 
         if (state is AdminSalesmanLoaded) {
           if (state.salesman.isEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) {
+                return;
+              }
+
+              widget.onSummaryUpdated(total: 0, active: 0, completed: 0, notStarted: 0);
+            });
+
             return const _EmptyState();
           }
 

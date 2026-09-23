@@ -40,7 +40,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final profile = await supabase.from('profiles').select().eq('id', user.id).maybeSingle();
 
     if (profile == null) {
-      return null;
+      throw Exception('User profile not found. Please contact the administrator.');
     }
 
     return UserModel.fromJson(user.id, Map<String, dynamic>.from(profile));

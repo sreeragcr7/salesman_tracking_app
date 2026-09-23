@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "salesman_tracking_app",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define-from-file=config/local_config.json"
+      ]
+    }
+  ]
+}
