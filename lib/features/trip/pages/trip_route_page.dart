@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:salesman_tracking_app/core/services/road_route_service.dart';
 import 'package:salesman_tracking_app/core/widgets/app_app_bar.dart';
 import 'package:salesman_tracking_app/domain/usecases/media/get_visit_media.dart';
 import 'package:salesman_tracking_app/init_dependencies.dart';
@@ -31,16 +32,24 @@ class _TripRoutePageState extends State<TripRoutePage> {
   final GetVisitsForTrip _getVisitsForTrip = sl<GetVisitsForTrip>();
   final GetVisitMedia _getVisitMedia = sl<GetVisitMedia>();
 
+  final RoadRouteService _roadRouteService = RoadRouteService();
+
   final MapController _mapController = MapController();
 
   List<TripLocationModel> _locations = [];
+  List<LatLng> _roadRoutePoints = [];
+
   List<VisitModel> _visits = [];
+
   Map<String, List<VisitMediaModel>> _visitMedia = {};
 
   TripModel? _trip;
 
   bool _isLoading = true;
+  bool _isBuildingRoadRoute = false;
+
   String? _errorMessage;
+  String? _roadRouteError;
 
   @override
   void initState() {
@@ -50,12 +59,21 @@ class _TripRoutePageState extends State<TripRoutePage> {
 
   Future<void> _loadTripData() async {
     try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
       final tripResult = await _getTripById(widget.tripId);
+
       final locationsResult = await _getTripLocations(widget.tripId);
+
       final visitsResult = await _getVisitsForTrip(widget.tripId);
 
       TripModel? trip;
+
       List<TripLocationModel> locations = [];
+
       List<VisitModel> visits = [];
 
       String? failureMessage;
@@ -130,6 +148,12 @@ class _TripRoutePageState extends State<TripRoutePage> {
         _isLoading = false;
       });
 
+      await _buildRoadRoute();
+
+      if (!mounted) {
+        return;
+      }
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _fitRouteToMap();
@@ -147,6 +171,50 @@ class _TripRoutePageState extends State<TripRoutePage> {
     }
   }
 
+  Future<void> _buildRoadRoute() async {
+    if (_locations.length < 2) {
+      return;
+    }
+
+    setState(() {
+      _isBuildingRoadRoute = true;
+      _roadRouteError = null;
+    });
+
+    try {
+      final roadRoute = await _roadRouteService.buildRoadRoute(_locations);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _roadRoutePoints = roadRoute;
+        _isBuildingRoadRoute = false;
+      });
+    } on RoadRouteException catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _roadRoutePoints = [];
+        _roadRouteError = e.message;
+        _isBuildingRoadRoute = false;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _roadRoutePoints = [];
+        _roadRouteError = 'Unable to create the road route.';
+        _isBuildingRoadRoute = false;
+      });
+    }
+  }
+
   List<LatLng> _buildAllMapPoints() {
     return [
       ..._locations.map((location) => LatLng(location.latitude, location.longitude)),
@@ -154,12 +222,16 @@ class _TripRoutePageState extends State<TripRoutePage> {
     ];
   }
 
-  List<LatLng> _buildRoutePoints() {
+  List<LatLng> _buildDisplayedRoutePoints() {
+    if (_roadRoutePoints.isNotEmpty) {
+      return _roadRoutePoints;
+    }
+
     return _locations.map((location) => LatLng(location.latitude, location.longitude)).toList();
   }
 
   void _fitRouteToMap() {
-    final points = _buildAllMapPoints();
+    final points = [..._buildAllMapPoints(), ..._roadRoutePoints];
 
     if (points.isEmpty) {
       return;
@@ -167,6 +239,7 @@ class _TripRoutePageState extends State<TripRoutePage> {
 
     if (points.length == 1) {
       _mapController.move(points.first, 17);
+
       return;
     }
 
@@ -192,6 +265,12 @@ class _TripRoutePageState extends State<TripRoutePage> {
   }
 
   @override
+  void dispose() {
+    _roadRouteService.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
@@ -202,22 +281,40 @@ class _TripRoutePageState extends State<TripRoutePage> {
 
     if (_errorMessage != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Daily Route')),
+        appBar: const AppAppBar(title: 'Daily Route'),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text(_errorMessage!, textAlign: TextAlign.center),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 48),
+                const SizedBox(height: 16),
+                Text(_errorMessage!, textAlign: TextAlign.center),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: _loadTripData,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Try Again'),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
 
-    final routePoints = _buildRoutePoints();
+    final routePoints = _buildDisplayedRoutePoints();
 
     if (routePoints.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Daily Route')),
-        body: const Center(child: Text('No GPS locations found for this trip.')),
+        appBar: const AppAppBar(title: 'Daily Route'),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text('No GPS locations were recorded for this trip.', textAlign: TextAlign.center),
+          ),
+        ),
       );
     }
 
@@ -228,7 +325,14 @@ class _TripRoutePageState extends State<TripRoutePage> {
       ),
       body: Stack(
         children: [
-          TripRouteMap(mapController: _mapController, locations: _locations, visits: _visits, visitMedia: _visitMedia),
+          TripRouteMap(
+            mapController: _mapController,
+            locations: _locations,
+            roadRoutePoints: _roadRoutePoints,
+            visits: _visits,
+            visitMedia: _visitMedia,
+          ),
+
           if (_trip != null)
             TripInfoCard(
               visitCount: _visits.length,
@@ -236,6 +340,53 @@ class _TripRoutePageState extends State<TripRoutePage> {
               startTime: _formatTime(_trip!.startTime),
               endTime: _formatTime(_trip!.endTime),
             ),
+
+          if (_isBuildingRoadRoute)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Card(
+                elevation: 3,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text('Building road route...', style: Theme.of(context).textTheme.bodyMedium)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          // if (!_isBuildingRoadRoute && _roadRouteError != null)
+          //   Positioned(
+          //     top: 16,
+          //     left: 16,
+          //     right: 16,
+          //     child: Card(
+          //       elevation: 3,
+          //       child: Padding(
+          //         padding: const EdgeInsets.all(12),
+          //         child: Row(
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          //             const Icon(Icons.info_outline, size: 20),
+          //             const SizedBox(width: 10),
+          //             Expanded(
+          //               child: Text(
+          //                 'Road matching was unavailable. '
+          //                 'The GPS trace is being displayed instead.',
+          //                 style: Theme.of(context).textTheme.bodySmall,
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       ),
+          //     ),
+          //   ),
         ],
       ),
     );

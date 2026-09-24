@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:salesman_tracking_app/core/loaders/app_loader.dart';
+import 'package:salesman_tracking_app/domain/entities/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:salesman_tracking_app/core/theme/app_theme.dart';
@@ -23,29 +25,29 @@ class App extends StatelessWidget {
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: ThemeMode.system,
-        home: const _AppEntry(),
+        home: const AppEntry(),
       ),
     );
   }
 }
 
-class _AppEntry extends StatefulWidget {
-  const _AppEntry();
+class AppEntry extends StatefulWidget {
+  const AppEntry({super.key});
 
   @override
-  State<_AppEntry> createState() => _AppEntryState();
+  State<AppEntry> createState() => _AppEntryState();
 }
 
-class _AppEntryState extends State<_AppEntry> {
+class _AppEntryState extends State<AppEntry> {
   bool? _onboardingCompleted;
 
   @override
   void initState() {
     super.initState();
-    _checkOnboarding();
+    _loadOnboardingStatus();
   }
 
-  Future<void> _checkOnboarding() async {
+  Future<void> _loadOnboardingStatus() async {
     final prefs = await SharedPreferences.getInstance();
 
     final completed = prefs.getBool(OnboardingScreen.onboardingCompletedKey) ?? false;
@@ -59,7 +61,7 @@ class _AppEntryState extends State<_AppEntry> {
     });
   }
 
-  void _openAuthGate() {
+  void _completeOnboarding() {
     if (!mounted) {
       return;
     }
@@ -71,43 +73,79 @@ class _AppEntryState extends State<_AppEntry> {
 
   @override
   Widget build(BuildContext context) {
-    if (_onboardingCompleted == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    final onboardingCompleted = _onboardingCompleted;
+
+    // We don't know the onboarding status yet.
+    if (onboardingCompleted == null) {
+      return const _AppLoadingScreen();
     }
 
-    if (!_onboardingCompleted!) {
-      return OnboardingScreen(onGetStarted: _openAuthGate);
+    // First launch.
+    if (!onboardingCompleted) {
+      return OnboardingScreen(onGetStarted: _completeOnboarding);
     }
 
-    return const Scaffold(body: _AuthGate());
+    // Onboarding completed.
+    return const AuthGate();
   }
 }
 
-class _AuthGate extends StatelessWidget {
-  const _AuthGate();
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
+        // Only the initial session check should
+        // display the full-screen loading screen.
         if (state is AuthInitial || state is AuthLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const _AppLoadingScreen();
         }
 
         if (state is AuthAuthenticated) {
-          if (state.user.role == 'admin') {
-            return const AdminHomePage();
-          }
-
-          return const SalesmanHomePage();
+          return _AuthenticatedEntry(user: state.user);
         }
 
-        if (state is AuthUnauthenticated) {
+        if (state is AuthUnauthenticated || state is AuthFailure) {
           return const LoginPage();
         }
 
-        return const Center(child: CircularProgressIndicator());
+        // Login loading must NOT come here.
+        if (state is AuthLoginLoading) {
+          return const LoginPage();
+        }
+
+        return const _AppLoadingScreen();
       },
     );
+  }
+}
+
+class _AuthenticatedEntry extends StatelessWidget {
+  const _AuthenticatedEntry({required this.user});
+
+  final User user;
+
+  @override
+  Widget build(BuildContext context) {
+    if (user.role == 'admin') {
+      return const AdminHomePage();
+    }
+
+    if (user.role == 'salesman') {
+      return const SalesmanHomePage();
+    }
+
+    return const LoginPage();
+  }
+}
+
+class _AppLoadingScreen extends StatelessWidget {
+  const _AppLoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: AppLoader());
   }
 }

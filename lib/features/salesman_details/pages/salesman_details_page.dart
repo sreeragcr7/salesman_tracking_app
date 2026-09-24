@@ -33,26 +33,29 @@ class _SalesmanDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const AppAppBar(title: 'Salesman Details'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BlocBuilder<SalesmanDetailsBloc, SalesmanDetailsState>(
-              builder: (context, state) {
-                if (state is SalesmanDetailsLoaded) {
-                  return SalesmanProfileHeader(salesman: salesman, todayTrip: state.todayTrip);
-                }
+    final colorScheme = Theme.of(context).colorScheme;
 
-                return SalesmanProfileHeader(salesman: salesman, todayTrip: null);
-              },
+    return Scaffold(
+      backgroundColor: colorScheme.surfaceContainerLowest,
+      appBar: const AppAppBar(title: 'Salesman Details'),
+      body: BlocBuilder<SalesmanDetailsBloc, SalesmanDetailsState>(
+        builder: (context, state) {
+          final todayTrip = state is SalesmanDetailsLoaded ? state.todayTrip : null;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SalesmanProfileHeader(salesman: salesman, todayTrip: todayTrip),
+
+                const SizedBox(height: 24),
+
+                const WorkingHistorySection(),
+              ],
             ),
-            const SizedBox(height: 32),
-            const WorkingHistorySection(),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

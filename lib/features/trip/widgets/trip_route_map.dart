@@ -10,6 +10,7 @@ import 'visit_details_sheet.dart';
 class TripRouteMap extends StatelessWidget {
   final MapController mapController;
   final List<TripLocationModel> locations;
+  final List<LatLng> roadRoutePoints;
   final List<VisitModel> visits;
   final Map<String, List<VisitMediaModel>> visitMedia;
 
@@ -17,12 +18,21 @@ class TripRouteMap extends StatelessWidget {
     super.key,
     required this.mapController,
     required this.locations,
+    required this.roadRoutePoints,
     required this.visits,
     required this.visitMedia,
   });
 
-  List<LatLng> _buildRoutePoints() {
+  List<LatLng> _buildGpsPoints() {
     return locations.map((location) => LatLng(location.latitude, location.longitude)).toList();
+  }
+
+  List<LatLng> _buildDisplayedRoute() {
+    if (roadRoutePoints.isNotEmpty) {
+      return roadRoutePoints;
+    }
+
+    return _buildGpsPoints();
   }
 
   List<Marker> _buildMarkers(BuildContext context) {
@@ -75,23 +85,36 @@ class TripRouteMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final routePoints = _buildRoutePoints();
+    final routePoints = _buildDisplayedRoute();
 
-    return Stack(
+    if (routePoints.isEmpty) {
+      return const Center(child: Text('No route locations available.'));
+    }
+
+    final isRoadRouteAvailable = roadRoutePoints.isNotEmpty;
+
+    return FlutterMap(
+      mapController: mapController,
+      options: MapOptions(initialCenter: routePoints.first, initialZoom: 15),
       children: [
-        FlutterMap(
-          mapController: mapController,
-          options: MapOptions(initialCenter: routePoints.first, initialZoom: 15),
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.salesman_tracking_app',
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.example.salesman_tracking_app',
+        ),
+
+        PolylineLayer(
+          polylines: [
+            Polyline(
+              points: routePoints,
+              strokeWidth: isRoadRouteAvailable ? 5 : 4,
+              color: Theme.of(context).colorScheme.primary,
             ),
-            PolylineLayer(polylines: [Polyline(points: routePoints, strokeWidth: 5)]),
-            MarkerLayer(markers: _buildMarkers(context)),
-            RichAttributionWidget(attributions: [TextSourceAttribution('OpenStreetMap contributors')]),
           ],
         ),
+
+        MarkerLayer(markers: _buildMarkers(context)),
+
+        RichAttributionWidget(attributions: const [TextSourceAttribution('OpenStreetMap contributors')]),
       ],
     );
   }

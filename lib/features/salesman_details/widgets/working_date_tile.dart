@@ -17,81 +17,125 @@ class WorkingDateTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => TripVisitsPage(trip: trip)));
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.calendar_today_outlined, color: AppColors.primary, size: 22),
-              ),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.12)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => TripVisitsPage(trip: trip)));
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              children: [
+                _buildDateIcon(context),
 
-              const SizedBox(width: 14),
+                const SizedBox(width: 13),
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(DateFormat('MMMM d, yyyy').format(trip.date), style: textTheme.titleSmall),
-                    const SizedBox(height: 5),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.route_outlined,
-                          size: 16,
-                          color: textTheme.bodySmall?.color?.withValues(alpha: 0.60),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          '${trip.totalDistance.toStringAsFixed(1)} km',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: textTheme.bodySmall?.color?.withValues(alpha: 0.65),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+                Expanded(child: _buildTripInfo(context)),
 
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
 
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '₹${allowance.toStringAsFixed(2)}',
-                    style: textTheme.titleMedium?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    'Allowance',
-                    style: textTheme.bodySmall?.copyWith(color: textTheme.bodySmall?.color?.withValues(alpha: 0.60)),
-                  ),
-                ],
-              ),
+                _buildAllowance(context),
 
-              const SizedBox(width: 8),
+                const SizedBox(width: 8),
 
-              Icon(Icons.chevron_right, color: textTheme.bodyMedium?.color?.withValues(alpha: 0.50)),
-            ],
+                Icon(Icons.chevron_right_rounded, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55)),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDateIcon(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            DateFormat('dd').format(trip.date),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800),
+          ),
+          Text(
+            DateFormat('MMM').format(trip.date).toUpperCase(),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTripInfo(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          DateFormat('EEEE, yyyy').format(trip.date),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+
+        const SizedBox(height: 7),
+
+        Row(
+          children: [
+            Icon(Icons.route_outlined, size: 16, color: colorScheme.onSurfaceVariant),
+            const SizedBox(width: 5),
+            Text(
+              '${trip.totalDistance.toStringAsFixed(1)} km',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAllowance(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          '₹${allowance.toStringAsFixed(2)}',
+          style: theme.textTheme.titleSmall?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 3),
+        Text('Allowance', style: theme.textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+      ],
     );
   }
 }

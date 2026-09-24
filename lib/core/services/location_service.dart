@@ -2,10 +2,20 @@ import 'package:geolocator/geolocator.dart';
 
 class LocationService {
   Future<Position> getCurrentPosition() async {
+    await _ensureLocationAccess();
+
+    return Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.high));
+  }
+
+  Future<void> ensureLocationAccess() async {
+    await _ensureLocationAccess();
+  }
+
+  Future<void> _ensureLocationAccess() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
     if (!serviceEnabled) {
-      throw Exception('Location services are disabled. Please enable GPS.');
+      throw const LocationServiceException('Location services are disabled. Please enable GPS and try again.');
     }
 
     var permission = await Geolocator.checkPermission();
@@ -15,13 +25,26 @@ class LocationService {
     }
 
     if (permission == LocationPermission.denied) {
-      throw Exception('Location permission was denied.');
+      throw const LocationServiceException('Location permission was denied. Location tracking cannot start.');
     }
 
     if (permission == LocationPermission.deniedForever) {
-      throw Exception('Location permission is permanently denied. Please enable it from Settings.');
+      throw const LocationServiceException(
+        'Location permission is permanently denied. Please enable location permission from Settings.',
+      );
     }
 
-    return Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.high));
+    if (permission == LocationPermission.unableToDetermine) {
+      throw const LocationServiceException('Unable to determine location permission status.');
+    }
   }
+}
+
+class LocationServiceException implements Exception {
+  final String message;
+
+  const LocationServiceException(this.message);
+
+  @override
+  String toString() => message;
 }

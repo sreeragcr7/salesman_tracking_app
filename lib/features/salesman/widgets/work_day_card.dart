@@ -37,50 +37,94 @@ class WorkDayCard extends StatelessWidget {
 
     if (dayCompleted) {
       statusColor = AppColors.success;
-      statusIcon = Icons.check_circle_outline;
+      statusIcon = Icons.check_circle_rounded;
     } else if (dayStarted) {
       statusColor = colorScheme.primary;
-      statusIcon = Icons.location_on_outlined;
+      statusIcon = Icons.location_on_rounded;
     } else {
       statusColor = colorScheme.onSurfaceVariant;
-      statusIcon = Icons.location_off_outlined;
+      statusIcon = Icons.location_off_rounded;
     }
 
-    return Card(
-      margin: EdgeInsets.zero,
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.12)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 18, offset: const Offset(0, 6))],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(statusIcon, size: 25, color: statusColor),
+                ),
+
+                const SizedBox(width: 14),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Work Day', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 3),
+                      Text(
+                        _statusText(),
+                        style: textTheme.bodySmall?.copyWith(color: statusColor, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+
+                _StatusBadge(
+                  label: dayCompleted
+                      ? 'COMPLETED'
+                      : dayStarted
+                      ? 'ACTIVE'
+                      : 'NOT STARTED',
+                  color: statusColor,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
             Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.10), shape: BoxShape.circle),
-              child: Icon(statusIcon, size: 32, color: statusColor),
-            ),
-
-            const SizedBox(height: 14),
-
-            Text(
-              dayCompleted
-                  ? 'Day completed'
-                  : dayStarted
-                  ? 'Day started'
-                  : 'Day not started',
-              style: textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 6),
-
-            Text(
-              dayCompleted
-                  ? 'Your work day has ended for today.'
-                  : dayStarted
-                  ? 'Your work day has started.'
-                  : 'Start your day to begin location tracking.',
-              textAlign: TextAlign.center,
-              style: textTheme.bodyMedium?.copyWith(color: textTheme.bodyMedium?.color?.withValues(alpha: 0.65)),
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    dayStarted ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded,
+                    size: 20,
+                    color: statusColor,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      dayCompleted
+                          ? 'Location tracking completed for today.'
+                          : dayStarted
+                          ? 'Your location is being tracked.'
+                          : 'Start your day to begin location tracking.',
+                      style: textTheme.bodySmall?.copyWith(color: textTheme.bodySmall?.color?.withValues(alpha: 0.70)),
+                    ),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -92,6 +136,18 @@ class WorkDayCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _statusText() {
+    if (dayCompleted) {
+      return 'Your work day has ended';
+    }
+
+    if (dayStarted) {
+      return 'You are currently on duty';
+    }
+
+    return 'Ready to start your work day';
   }
 
   Widget _buildStartSection(BuildContext context) {
@@ -110,6 +166,7 @@ class WorkDayCard extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
+      height: 52,
       child: FilledButton.icon(
         onPressed: isLoading ? null : onStartDay,
         icon: isLoading
@@ -131,6 +188,7 @@ class WorkDayCard extends StatelessWidget {
       children: [
         SizedBox(
           width: double.infinity,
+          height: 52,
           child: FilledButton.icon(
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddVisitPage(tripId: activeTripId!)));
@@ -140,35 +198,66 @@ class WorkDayCard extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
 
-        SizedBox(
+        Container(
           width: double.infinity,
-          height: 50,
+          height: 52,
+          decoration: BoxDecoration(
+            color: colorScheme.error.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colorScheme.error.withValues(alpha: 0.30)),
+          ),
           child: GestureDetector(
             onLongPress: isEnding ? null : onEndDay,
-            child: Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: colorScheme.error.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colorScheme.error.withValues(alpha: 0.40)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.stop_circle_outlined, size: 20, color: colorScheme.error),
-                  const SizedBox(width: 8),
-                  Text(
-                    isEnding ? 'ENDING DAY...' : 'PRESS AND HOLD TO END DAY',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(color: colorScheme.error),
-                  ),
-                ],
-              ),
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.stop_circle_outlined, size: 20, color: colorScheme.error),
+                const SizedBox(width: 8),
+                Text(
+                  isEnding ? 'ENDING DAY...' : 'PRESS AND HOLD TO END DAY',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(color: colorScheme.error, fontWeight: FontWeight.w600),
+                ),
+              ],
             ),
           ),
         ),
+
+        const SizedBox(height: 8),
+
+        Text(
+          'Press and hold to prevent accidental ending',
+          textAlign: TextAlign.center,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.50)),
+        ),
       ],
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(20)),
+      child: Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: color, fontWeight: FontWeight.w700, letterSpacing: 0.3),
+      ),
     );
   }
 }

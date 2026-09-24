@@ -41,22 +41,62 @@ class _ImageMediaTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImagePage(imageUrl: media.mediaUrl)));
-      },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Image.network(
-          media.mediaUrl,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) {
-            return Container(
-              color: theme.colorScheme.surfaceContainerHighest,
-              child: Icon(Icons.broken_image_outlined, size: 30, color: theme.colorScheme.onSurfaceVariant),
-            );
-          },
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImagePage(imageUrl: media.mediaUrl)));
+        },
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(
+              media.mediaUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) {
+                  return child;
+                }
+
+                return Container(
+                  color: colorScheme.surfaceContainerHighest,
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (_, _, _) {
+                return Container(
+                  color: colorScheme.surfaceContainerHighest,
+                  alignment: Alignment.center,
+                  child: Icon(Icons.broken_image_outlined, size: 30, color: colorScheme.onSurfaceVariant),
+                );
+              },
+            ),
+
+            Positioned(
+              right: 7,
+              bottom: 7,
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.55), shape: BoxShape.circle),
+                child: const Icon(Icons.zoom_in_rounded, size: 17, color: Colors.white),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -71,22 +111,74 @@ class _VideoMediaTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenVideoPage(videoUrl: media.mediaUrl)));
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(Icons.video_library_outlined, size: 32, color: theme.colorScheme.onSurfaceVariant),
-            Positioned(bottom: 8, child: Icon(Icons.play_circle_fill, size: 28, color: theme.colorScheme.primary)),
-          ],
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenVideoPage(videoUrl: media.mediaUrl)));
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [colorScheme.surfaceContainerHighest, colorScheme.surfaceContainerHigh],
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 8)],
+                ),
+                child: const Icon(Icons.play_arrow_rounded, size: 27, color: Colors.white),
+              ),
+              Positioned(
+                left: 9,
+                bottom: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.videocam_outlined, size: 13, color: Colors.white),
+                      SizedBox(width: 4),
+                      Text(
+                        'VIDEO',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -104,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
-                          final isLoading = state is AuthLoading;
+                          final isLoading = state is AuthLoginLoading;
 
                           return PrimaryButton(label: 'LOGIN', onPressed: _login, isLoading: isLoading);
                         },
